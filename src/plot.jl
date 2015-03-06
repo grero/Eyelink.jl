@@ -44,3 +44,25 @@ end
 
 plot(fixations::Array{EyeEvent,1}) = plot(fixations, 5,5, 1440, 900)
 
+function plot(p::Winston.FramedPlot, saccades::Array{Saccade, 1};rows::Integer=5, cols::Integer=5,screen_width::Integer=1919, screen_height::Integer=1199)
+	G = plot_grid(p, rows,cols;screen_width=screen_width, screen_height=screen_height)
+	center_x = G.xmargin + 2*G.xdiff
+	center_y = G.ymargin + 2*G.ydiff
+	for saccade in saccades	
+		x = [saccade.start_x, saccade.end_x]
+		y = [saccade.start_y, saccade.end_y]
+		Winston.add(p, Winston.Curve(x,y))
+		Winston.add(p, Winston.Points([x[1]],[y[1]];symbolkind="circle"))
+		Winston.add(p, Winston.Points([x[2]],[y[2]];symbolkind="filled circle"))
+	end
+	Winston.setattr(p, "xrange", (0, screen_width))
+	Winston.setattr(p, "yrange", (0, screen_height))
+	p
+end
+
+function plot(saccades::Array{Saccade,1};kvs...) 
+	p = Winston.FramedPlot()
+	plot(p, saccades;kvs...)
+	p
+end
+
