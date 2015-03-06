@@ -1,6 +1,15 @@
 import Winston
 import Winston.plot
 
+type Grid
+	screen_width::Float64
+	screen_height::Float64
+	xdiff::Float64
+	ydiff::Float64
+	xmargin::Float64
+	ymargin::Float64
+	p::Winston.FramedPlot
+end
 
 function plot_grid(p::Winston.FramedPlot, rows::Int64, cols::Int64;screen_width::Int64=1440, screen_height::Int64=900)
 	xdiff = (screen_width-2*144.0)/cols
