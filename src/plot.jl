@@ -21,6 +21,7 @@ function plot_grid(p::Winston.FramedPlot, rows::Int64, cols::Int64;screen_width:
 	for i in 0:5
 		Winston.add(p, Winston.Curve([144+i*xdiff, 144+i*xdiff], [90, screen_height-90]))
 	end
+	Grid(float(screen_width), float(screen_height),xdiff,ydiff, 144,90,p)
 end
 
 function plot(p::Winston.FramedPlot, fixations::Array{EyeEvent,1},rows::Int64, cols::Int64,screen_width::Int64, screen_height::Int64)
