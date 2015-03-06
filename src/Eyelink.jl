@@ -71,5 +71,47 @@ function getfixations(f::EDFFile;verbose::Integer=0)
 	events
 end
 
+function parsetrials(f::EDFFile)
+	trialidx = 0
+	trialevent = :none
+	firstsaccade = false
+	saccades = Array(Saccade,0)
+	trialindex = Array(Int64,0)
+	trialstart = 0
+	while f.nextevent != :nopending
+		nextevent = edfnextdata!(f)
+		_event= edfdata(f)
+		if nextevent == :messageevent
+			message = getmessage(_event)
+			#check what the message is
+			m = message[1:3:end]
+			if m == "00000000" #trial start
+				trialevent = :trialstart
+				trialidx +=1
+				firstsaccade = false
+				trialstart = _event.sttime
+			elseif m == "00000101" #response
+				trialevent = :response
+			elseif m == "00100000" #trial end
+				trialevent = :none
+				#if we are at the end and have seen no saccade, insert an empty one
+				#if !firstsaccade
+				#	push!(saccades, zero(Saccade))
+				#end
+			end
+		elseif nextevent == :endsacc && trialevent != :none
+
+			#if !firstsaccade
+			#	firstsaccade = true
+			push!(saccades, Saccade(float(_event.sttime-trialstart), _event.gstx, _event.gsty, 
+				  _event.genx, _event.geny))
+		     push!(trialindex,trialidx)
+			# end
+
+		end
+	end
+	return saccades,trialindex
+end
+
 
 end #module
