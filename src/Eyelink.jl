@@ -17,7 +17,9 @@ function edfopen(fname::String,consistency_check::Int64, load_events::Bool, load
 		error("Could not open file $fname")
 		return nothing
 	end
-	return EDFFile(fname,f) 
+	edffile = EDFFile(fname,f) 
+	finalizer(edffile, edfclose)
+	return edffile 
 end
 
 function edfclose(f::EDFFile)
