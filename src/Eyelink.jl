@@ -104,7 +104,7 @@ function parsetrials(f::EDFFile)
 			#if !firstsaccade
 			#	firstsaccade = true
 			push!(saccades, Saccade(float(_event.sttime-trialstart), _event.gstx, _event.gsty, 
-				  _event.genx, _event.geny))
+				  _event.genx, _event.geny,trialidx))
 		     push!(trialindex,trialidx)
 			# end
 

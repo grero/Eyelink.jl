@@ -1,4 +1,4 @@
-import Base.zero, Base.isempty
+import Base.zero, Base.isempty, Base.+
 
 datatypes = {0 => :nopending,
 			24 => :messageevent, 
@@ -38,6 +38,17 @@ type Saccade
 	start_y::Float32
 	end_x::Float32
 	end_y::Float32
+	trialindex::Int64
+end
+
++(s::Saccade, t::Real) = Saccade(s.time + t, s.start_x, s.start_y, s.end_x, s.end_y, s.trialindex)
+
+function gettime(S::Array{Saccade,1})
+	time = zeros(length(S))
+	for (i,s) in S
+		time[i] = s.time
+	end
+	return time
 end
 
 function zero(::Type{Saccade})
