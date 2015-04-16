@@ -45,7 +45,7 @@ end
 
 function gettime(S::Array{Saccade,1})
 	time = zeros(length(S))
-	for (i,s) in S
+	for (i,s) in enumerate(S)
 		time[i] = s.time
 	end
 	return time
