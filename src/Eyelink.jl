@@ -76,6 +76,11 @@ function getfixations(f::EDFFile;verbose::Integer=0)
 end
 
 function parsetrials(f::EDFFile)
+	trialstart = "00000000"
+	parsetrials(f, trialstart)
+end
+
+function parsetrials(f::EDFFile,trialmarker::String)
 	trialidx = 0
 	trialevent = :none
 	firstsaccade = false
@@ -89,7 +94,7 @@ function parsetrials(f::EDFFile)
 			message = getmessage(_event)
 			#check what the message is
 			m = message[1:3:end]
-			if m == "00000000" #trial start
+			if m == trialmarker #trial start
 				trialevent = :trialstart
 				trialidx +=1
 				firstsaccade = false
