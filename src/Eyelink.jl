@@ -12,6 +12,10 @@ end
 
 function edfopen(fname::String,consistency_check::Int64, load_events::Bool, load_samples::Bool)
 	err = 0
+	if !isfile(fname)
+		error("Could not open file $fname")
+		return nothing
+	end
 	f = ccall((:edf_open_file, _library),Ptr{Void}, (Ptr{Uint8}, Int64, Int64, Int64,Ptr{Int64}),fname,consistency_check,load_events,load_samples,&err)
 	if err != 0
 		error("Could not open file $fname")
