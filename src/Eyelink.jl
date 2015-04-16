@@ -77,6 +77,20 @@ function getfixations(f::EDFFile;verbose::Integer=0)
 	events
 end
 
+@doc meta("Return the screen size as (width, height) in pixels", return_type=(Int64, Int64))->
+function getscreensize(f::EDFFile;verbose::Integer=0)
+	while f.nextevent != :nopending
+		nextevent = edfnextdata!(f)
+		if nextevent == :messageevent
+			msg = getmessage(edfdata(f))
+			if contains(msg, "DISPLAY_COORDS")
+				pp = split(strip(msg,'\0'))
+				return int(pp[end-1])+1,int(pp[end])+1
+			end
+		end
+	end
+end
+
 function parsetrials(f::EDFFile)
 	trialstart = "00000000"
 	parsetrials(f, trialstart)
