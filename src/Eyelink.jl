@@ -113,5 +113,16 @@ function parsetrials(f::EDFFile)
 	return saccades,trialindex
 end
 
+@doc meta("Return the x and y coordinates of the saccade end points. Note that y = 0 corresponds to the top of the screen")->
+function get_saccade_position(saccades::Array{Saccade,1})
+	n = length(saccades)
+	x = Array(Float64,n)
+	y = Array(Float64,n)
+	for (i,saccade) in enumerate(saccades) 
+		x[i] = saccade.end_x 
+		y[i] = saccade.end_y 
+	end
+	x,y
+end
 
 end #module
