@@ -1,4 +1,6 @@
 module Eyelink
+using Docile
+@docstrings
 include("types.jl")
 include("plot.jl")
 
