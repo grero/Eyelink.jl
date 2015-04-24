@@ -32,7 +32,9 @@ type EyeEvent
 	y::Float32
 end
 
-type Saccade
+abstract AbstractSaccade
+
+type Saccade <: AbstractSaccade
 	time::Float64
 	start_x::Float32
 	start_y::Float32
@@ -41,9 +43,28 @@ type Saccade
 	trialindex::Int64
 end
 
-+(s::Saccade, t::Real) = Saccade(s.time + t, s.start_x, s.start_y, s.end_x, s.end_y, s.trialindex)
+type AlignedSaccade <: AbstractSaccade
+	time::Float64
+	start_x::Float32
+	start_y::Float32
+	end_x::Float32
+	end_y::Float32
+	trialindex::Int64
+	alignment::Symbol
+end
 
-function gettime(S::Array{Saccade,1})
++(s::Saccade, t::Real) = Saccade(s.time + t, s.start_x, s.start_y, s.end_x, s.end_y, s.trialindex)
++(s::AlignedSaccade, t::Real) = AlignedSaccade(s.time + t, s.start_x, s.start_y, s.end_x, s.end_y, s.trialindex, s.alignment)
+
+function Saccade(s::AlignedSaccade)
+	Saccade(s.time, s.start_x, s.start_y, s.end_x, s.end_y, s.trialindex)
+end
+
+function Saccade(s::AlignedSaccade,t0::Real)
+	Saccade(s.time + t0, s.start_x, s.start_y, s.end_x, s.end_y, s.trialindex)
+end
+
+function gettime{T<:AbstractSaccade}(S::Array{T,1})
 	time = zeros(length(S))
 	for (i,s) in enumerate(S)
 		time[i] = s.time
@@ -55,7 +76,11 @@ function zero(::Type{Saccade})
 	return Saccade(0, 0.0, 0.0, 0.0, 0.0)
 end
 
-isempty(S::Saccade) = S.start_x == S.end_x & S.start_y == S.end_y
+function zero(::Type{AlignedSaccade})
+	return AlignedSaccade(0, 0.0, 0.0, 0.0, 0.0,:unknown)
+end
+
+isempty{T<:AbstractSaccade}(S::T) = S.start_x == S.end_x & S.start_y == S.end_y
 
 type LSTRING
 	len::Int16

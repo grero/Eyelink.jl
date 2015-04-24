@@ -100,7 +100,7 @@ function parsetrials(f::EDFFile,trialmarker::String)
 	trialidx = 0
 	trialevent = :none
 	firstsaccade = false
-	saccades = Array(Saccade,0)
+	saccades = Array(AlignedSaccade,0)
 	trialindex = Array(Int64,0)
 	trialstart = 0
 	while f.nextevent != :nopending
@@ -128,8 +128,8 @@ function parsetrials(f::EDFFile,trialmarker::String)
 
 			#if !firstsaccade
 			#	firstsaccade = true
-			push!(saccades, Saccade(float(_event.sttime-trialstart), _event.gstx, _event.gsty, 
-				  _event.genx, _event.geny,trialidx))
+			push!(saccades, AlignedSaccade(float(_event.sttime-trialstart), _event.gstx, _event.gsty, 
+				  _event.genx, _event.geny,trialidx,:trialstart))
 		     push!(trialindex,trialidx)
 			# end
 
@@ -139,7 +139,7 @@ function parsetrials(f::EDFFile,trialmarker::String)
 end
 
 @doc meta("Return the x and y coordinates of the saccade end points. Note that y = 0 corresponds to the top of the screen")->
-function get_saccade_position(saccades::Array{Saccade,1})
+function get_saccade_position{T<:AbstractSaccade}(saccades::Array{T,1})
 	n = length(saccades)
 	x = Array(Float64,n)
 	y = Array(Float64,n)
