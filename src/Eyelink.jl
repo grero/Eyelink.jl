@@ -53,6 +53,17 @@ function edfdata(f::EDFFile)
 	end
 end
 
+function getmessages(f::EDFFile)
+	messages = Array(String,0)
+	while f.nextevent != :nopending
+		nextevent = edfnextdata!(f)
+		if nextevent == :messageevent
+			push!(messages, getmessage(edfdata(f)))
+		end
+	end
+	messages
+end
+
 function getmessage(event::FEVENT)
 	if get(datatypes,event.eventtype,:unknown) == :messageevent
 		return bytestring(convert(Ptr{Uint8}, event.message + sizeof(Uint16)), unsafe_load(convert(Ptr{Uint16}, event.message)))
