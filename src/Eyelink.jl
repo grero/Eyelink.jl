@@ -1,8 +1,12 @@
 module Eyelink
+import GUICheck
 using Docile
 @docstrings
 include("types.jl")
-include("plot.jl")
+
+if GUICheck.hasgui()
+	include("plot.jl")
+end
 
 const _library = "/Library/Frameworks/edfapi.framework/Versions/Current/edfapi"
 
