@@ -44,6 +44,7 @@ end
 function edfdata(f::EDFFile)
 	_data = ccall((:edf_get_float_data, _library), Ptr{Void}, (Ptr{Void},), f.ptr)
 	if f.nextevent == :sample_type
+		#TODO: Implement this
 	elseif f.nextevent == :recording_info
 	elseif f.nextevent == :no_pending_items
 	else
