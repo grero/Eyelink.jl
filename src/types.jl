@@ -125,3 +125,23 @@ type FEVENT
 	parsedby::Uint16
 	message::Ptr{LSTRING}
 end
+
+type FSAMPLE
+        time::Uint32
+        sampletype::Int16
+        flags::Uint16
+        px::Array{Float32,1}
+        py::Array{Float32,1}
+        hx::Array{Float32,1}
+        hy::Array{Float32,1}
+        pa::Array{Float32,1}
+        gx::Array{Float32,1}
+        gy::Array{Float32,1}
+        rk::Float32
+        ry::Float32
+        status::Uint16
+        input::Uint16
+        buttons::Uint16
+        htype::Int16
+        hdata::Array{Int16,1}
+end

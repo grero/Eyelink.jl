@@ -49,6 +49,8 @@ function edfdata(f::EDFFile)
 	_data = ccall((:edf_get_float_data, _library), Ptr{Void}, (Ptr{Void},), f.ptr)
 	if f.nextevent == :sample_type
 		#TODO: Implement this
+		_sample = unsafe_load(convert(Ptr{FESAMPLE}, _data), 1)
+                return _sample
 	elseif f.nextevent == :recording_info
 	elseif f.nextevent == :no_pending_items
 	else
@@ -67,6 +69,20 @@ function getmessages(f::EDFFile)
 		end
 	end
 	messages
+end
+
+function getgazepos(f::EDFFile)
+    gazex = Array(Float32,0)
+    gazey = Array(Float32,0)
+    while f.nextevent != :nopending
+        nextevent = edfnextdata!(f)
+        if nextevent == :sample_type
+            _sample = edfdata(f)
+            push!(gazex, _sample.gx[1])
+            push!(gazey, _sample.gy[1])
+        end
+    end
+    [gazex gazey]
 end
 
 function getmessage(event::FEVENT)
