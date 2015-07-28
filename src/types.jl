@@ -1,17 +1,18 @@
 import Base.zero, Base.isempty, Base.+
 
 datatypes = {0 => :nopending,
-			24 => :messageevent, 
+			24 => :messageevent,
 			 25 => :buttonevent,
-			 5 => :startsacc , 
-			 6 => :endsacc, 
-			 7 => :startfix, 
+			 5 => :startsacc,
+			 6 => :endsacc,
+			 7 => :startfix,
 			 8 => :endfix,
 			 28 => :inputevent,
 			 15 => :startsamples,
 			 16 => :endsamples,
 			 17 => :startevent,
-			 18	=> :endevent}
+			 18 => :endevent,
+                         200 => :sample_type}
 
 
 type EDFFile
@@ -124,4 +125,58 @@ type FEVENT
 	buttons::Uint16
 	parsedby::Uint16
 	message::Ptr{LSTRING}
+end
+
+immutable float_vec2
+    x1::Float32
+    x2::Float32
+end
+
+immutable int_vec2
+    x1::Int16
+    x2::Int16
+end
+
+immutable int_vec8
+    x1::Int16
+    x2::Int16
+    x3::Int16
+    x4::Int16
+    x5::Int16
+    x6::Int16
+    x7::Int16
+    x8::Int16
+end
+
+
+type FSAMPLE
+        time::Uint32
+        #px::Array{Float32,1}
+        px::float_vec2
+        py::float_vec2
+        hx::float_vec2
+        hy::float_vec2
+        pa::float_vec2
+        gx::float_vec2
+        gy::float_vec2
+        rx::Float32
+        ry::Float32
+        gxvel::float_vec2
+        gyvel::float_vec2
+        hxvel::float_vec2
+        hyvel::float_vec2
+        rxvel::float_vec2
+        ryvel::float_vec2
+        fgxvel::float_vec2
+        fgyvel::float_vec2
+        fhxvel::float_vec2
+        fhyvel::float_vec2
+        frxvel::float_vec2
+        fryvel::float_vec2
+        hdata::int_vec8
+        flags::Uint16
+        input::Uint16
+        buttons::Uint16
+        htype::Int16
+        errors::Uint16
 end

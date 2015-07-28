@@ -49,6 +49,8 @@ function edfdata(f::EDFFile)
 	_data = ccall((:edf_get_float_data, _library), Ptr{Void}, (Ptr{Void},), f.ptr)
 	if f.nextevent == :sample_type
 		#TODO: Implement this
+		_sample = unsafe_load(convert(Ptr{FSAMPLE}, _data), 1)
+                return _sample
 	elseif f.nextevent == :recording_info
 	elseif f.nextevent == :no_pending_items
 	else
@@ -60,18 +62,39 @@ end
 
 function getmessages(f::EDFFile)
 	messages = Array(String,0)
+        timestamps = Array(Int64,0)
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
 		if nextevent == :messageevent
-			push!(messages, getmessage(edfdata(f)))
+                        message,timestamp = getmessage(edfdata(f))
+			push!(messages, strip(message,'\0'))
+                        push!(timestamps,timestamp)
 		end
 	end
-	messages
+	messages,timestamps
+end
+
+function getgazepos(f::EDFFile)
+    gazex = Array(Float32,0)
+    gazey = Array(Float32,0)
+    timestamp = Array(Int64,0)
+    while f.nextevent != :nopending
+        nextevent = edfnextdata!(f)
+        if nextevent == :sample_type
+            _sample = edfdata(f)
+            push!(gazex, _sample.gx.x1)
+            push!(gazex, _sample.gx.x2)
+            push!(gazey, _sample.gy.x1)
+            push!(gazey, _sample.gy.x2)
+            push!(timestamp, _sample.time)
+        end
+    end
+    reshape(gazex,(2,div(length(gazex),2))), reshape(gazey, (2, div(length(gazey),2))), timestamp
 end
 
 function getmessage(event::FEVENT)
 	if get(datatypes,event.eventtype,:unknown) == :messageevent
-		return bytestring(convert(Ptr{Uint8}, event.message + sizeof(Uint16)), unsafe_load(convert(Ptr{Uint16}, event.message)))
+		return bytestring(convert(Ptr{Uint8}, event.message + sizeof(Uint16)), unsafe_load(convert(Ptr{Uint16}, event.message))), event.sttime
 	end
 end
 
