@@ -62,13 +62,16 @@ end
 
 function getmessages(f::EDFFile)
 	messages = Array(String,0)
+        timestamps = Array(Int64,0)
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
 		if nextevent == :messageevent
-			push!(messages, getmessage(edfdata(f)))
+                        message,timestamp = getmessage(edfdata(f))
+			push!(messages, strip(message,'\0')
+                        push!(timestamps,timestamp)
 		end
 	end
-	messages
+	messages,timestamps
 end
 
 function getgazepos(f::EDFFile)
@@ -91,7 +94,7 @@ end
 
 function getmessage(event::FEVENT)
 	if get(datatypes,event.eventtype,:unknown) == :messageevent
-		return bytestring(convert(Ptr{Uint8}, event.message + sizeof(Uint16)), unsafe_load(convert(Ptr{Uint16}, event.message)))
+		return bytestring(convert(Ptr{Uint8}, event.message + sizeof(Uint16)), unsafe_load(convert(Ptr{Uint16}, event.message))), event.sttime
 	end
 end
 
