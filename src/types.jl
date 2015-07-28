@@ -11,7 +11,8 @@ datatypes = {0 => :nopending,
 			 15 => :startsamples,
 			 16 => :endsamples,
 			 17 => :startevent,
-			 18	=> :endevent}
+			 18 => :endevent,
+                         200 => :sample_type}
 
 
 type EDFFile
@@ -126,22 +127,45 @@ type FEVENT
 	message::Ptr{LSTRING}
 end
 
+immutable float_vec2
+    x1::Float32
+    x2::Float32
+end
+
+immutable int_vec2
+    x1::Int16
+    x2::Int16
+end
+
 type FSAMPLE
         time::Uint32
-        sampletype::Int16
         flags::Uint16
-        px::Array{Float32,1}
-        py::Array{Float32,1}
-        hx::Array{Float32,1}
-        hy::Array{Float32,1}
-        pa::Array{Float32,1}
-        gx::Array{Float32,1}
-        gy::Array{Float32,1}
-        rk::Float32
+        #px::Array{Float32,1}
+        px::float_vec2
+        py::float_vec2
+        hx::float_vec2
+        hy::float_vec2
+        pa::float_vec2
+        gx::float_vec2
+        gy::float_vec2
+        rx::Float32
         ry::Float32
         status::Uint16
         input::Uint16
         buttons::Uint16
         htype::Int16
-        hdata::Array{Int16,1}
+        hdata::int_vec2
+        errors::Uint16
+        gxvel::float_vec2
+        gyvel::float_vec2
+        hxvel::float_vec2
+        hyvel::float_vec2
+        rxvel::float_vec2
+        ryvel::float_vec2
+        fgxvel::float_vec2
+        fgyvel::float_vec2
+        fhxvel::float_vec2
+        fhyvel::float_vec2
+        frxvel::float_vec2
+        fryvel::float_vec2
 end
