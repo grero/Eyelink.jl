@@ -1,11 +1,11 @@
 import Base.zero, Base.isempty, Base.+
 
 datatypes = {0 => :nopending,
-			24 => :messageevent, 
+			24 => :messageevent,
 			 25 => :buttonevent,
-			 5 => :startsacc , 
-			 6 => :endsacc, 
-			 7 => :startfix, 
+			 5 => :startsacc,
+			 6 => :endsacc,
+			 7 => :startfix,
 			 8 => :endfix,
 			 28 => :inputevent,
 			 15 => :startsamples,
