@@ -137,9 +137,20 @@ immutable int_vec2
     x2::Int16
 end
 
+immutable int_vec8
+    x1::Int16
+    x2::Int16
+    x3::Int16
+    x4::Int16
+    x5::Int16
+    x6::Int16
+    x7::Int16
+    x8::Int16
+end
+
+
 type FSAMPLE
         time::Uint32
-        flags::Uint16
         #px::Array{Float32,1}
         px::float_vec2
         py::float_vec2
@@ -150,12 +161,6 @@ type FSAMPLE
         gy::float_vec2
         rx::Float32
         ry::Float32
-        status::Uint16
-        input::Uint16
-        buttons::Uint16
-        htype::Int16
-        hdata::int_vec2
-        errors::Uint16
         gxvel::float_vec2
         gyvel::float_vec2
         hxvel::float_vec2
@@ -168,4 +173,10 @@ type FSAMPLE
         fhyvel::float_vec2
         frxvel::float_vec2
         fryvel::float_vec2
+        hdata::int_vec8
+        flags::Uint16
+        input::Uint16
+        buttons::Uint16
+        htype::Int16
+        errors::Uint16
 end
