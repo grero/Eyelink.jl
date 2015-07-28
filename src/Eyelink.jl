@@ -67,7 +67,7 @@ function getmessages(f::EDFFile)
 		nextevent = edfnextdata!(f)
 		if nextevent == :messageevent
                         message,timestamp = getmessage(edfdata(f))
-			push!(messages, strip(message,'\0')
+			push!(messages, strip(message,'\0'))
                         push!(timestamps,timestamp)
 		end
 	end
