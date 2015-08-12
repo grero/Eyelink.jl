@@ -146,7 +146,7 @@ function parsetrials(f::EDFFile,trialmarker::String)
 		nextevent = edfnextdata!(f)
 		_event= edfdata(f)
 		if nextevent == :messageevent
-			message = getmessage(_event)
+			message,tt = getmessage(_event)
 			#check what the message is
 			m = message[1:3:end]
 			if m == trialmarker #trial start
