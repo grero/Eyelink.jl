@@ -116,7 +116,7 @@ function getfixations(f::EDFFile;verbose::Integer=0)
 	events
 end
 
-@doc meta("Return the screen size as (width, height) in pixels", return_type=(Int64, Int64))->
+Docile.@doc meta("Return the screen size as (width, height) in pixels", return_type=(Int64, Int64))->
 function getscreensize(f::EDFFile;verbose::Integer=0)
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
@@ -236,7 +236,7 @@ function parsetrials{T<:String}(fnames::Array{T,1},args...)
     saccades, trialindex, correct, target_row, target_col, distractor_row, distractor_col
 end
 
-@doc meta("Return the x and y coordinates of the saccade end points. Note that y = 0 corresponds to the top of the screen")->
+Docile.@doc meta("Return the x and y coordinates of the saccade end points. Note that y = 0 corresponds to the top of the screen")->
 function get_saccade_position{T<:AbstractSaccade}(saccades::Array{T,1})
 	n = length(saccades)
 	x = Array(Float64,n)
