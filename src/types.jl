@@ -1,6 +1,6 @@
 import Base.zero, Base.isempty, Base.+
 
-datatypes = {0 => :nopending,
+datatypes = Dict{Int16, Symbol}(0 => :nopending,
 			24 => :messageevent,
 			 25 => :buttonevent,
 			 5 => :startsacc,
@@ -12,7 +12,7 @@ datatypes = {0 => :nopending,
 			 16 => :endsamples,
 			 17 => :startevent,
 			 18 => :endevent,
-                         200 => :sample_type}
+             200 => :sample_type)
 
 
 type EDFFile
