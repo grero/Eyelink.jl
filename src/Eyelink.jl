@@ -222,16 +222,18 @@ function parsetrials(f::EDFFile,trialmarker::String)
 end
 
 function parsetrials{T<:String}(fnames::Array{T,1},args...)
-    saccades, trialindex, correct, distractor_row, distractor_col = parsetrials(fnames[1],args...)
+    saccades, trialindex, correct, target_row, target_col,distractor_row, distractor_col = parsetrials(fnames[1],args...)
     for f in fnames[2:end]
-        _saccades, _trialindex, _correct, _distractor_row, _distractor_col = parsetrials(f,args...)
+        _saccades, _trialindex, _correct, _target_row, _target_col, _distractor_row, _distractor_col = parsetrials(f,args...)
         append!(saccades, _saccades)
         append!(trialindex, _trialindex + trialindex[end])
         append!(correct, _correct)
+        append!(target_row, _target_row)
+        append!(target_col, _target_col)
         append!(distractor_row, _distractor_row)
         append!(distractor_col, _distractor_col)
     end
-    saccades, trialindex, correct, distractor_row, distractor_col
+    saccades, trialindex, correct, target_row, target_col, distractor_row, distractor_col
 end
 
 @doc meta("Return the x and y coordinates of the saccade end points. Note that y = 0 corresponds to the top of the screen")->
