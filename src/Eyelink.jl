@@ -146,7 +146,16 @@ function parsetrials(f::EDFFile,trialmarker::String)
 	firstsaccade = false
 	saccades = Array(AlignedSaccade,0)
 	trialindex = Array(Int64,0)
+	correct = Array(Bool,0)
+        distractor_row = Array(Int64,0)
+        distractor_col = Array(Int64,0)
+        target_row = Array(Int64,0)
+        target_col = Array(Int64,0)
 	trialstart = 0
+        d_row = 0
+        d_col = 0
+        t_row = 0
+        t_col = 0
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
 		_event= edfdata(f)
@@ -159,27 +168,70 @@ function parsetrials(f::EDFFile,trialmarker::String)
 				trialidx +=1
 				firstsaccade = false
 				trialstart = _event.sttime
+                                push!(correct, false)
+                                push!(distractor_row,0)
+                                push!(distractor_col,0)
+                                push!(target_row,0)
+                                push!(target_col,0)
 			elseif m == "00000101" #response
-				trialevent = :response
+                            trialevent = :response
+                        elseif m == "00000110" #reward
+                            correct[trialidx] = true
 			elseif m == "00100000" #trial end
 				trialevent = :none
 				#if we are at the end and have seen no saccade, insert an empty one
 				#if !firstsaccade
 				#	push!(saccades, zero(Saccade))
 				#end
+                                d_row = 0
+                                d_col = 0
+                                t_row = 0
+                                t_col = 0
+                        elseif m[1] == '1' && m[2] == '0'
+                            if length(m) == 8
+                                d_row = parseint(m[8:-1:6],2)
+                                d_col = parseint(m[5:-1:3],2)
+                            elseif length(m) == 14
+                                d_row = parseint(m[end:-1:9],2)
+                                d_col = parseint(m[8:-1:3],2)
+                            end
+                            distractor_row[trialidx] = d_row
+                            distractor_col[trialidx] = d_col
+                        elseif m[1] == '0' && m[2] == '1'
+                            if length(m) == 8
+                                t_row = parseint(m[8:-1:6],2)
+                                t_col = parseint(m[5:-1:3],2)
+                            elseif length(m) == 14
+                                t_row = parseint(m[end:-1:9],2)
+                                t_col = parseint(m[8:-1:3],2)
+                            end
+                            target_row[trialidx] = t_row
+                            target_col[trialidx] = t_col
 			end
 		elseif nextevent == :endsacc && trialevent != :none
 
 			#if !firstsaccade
 			#	firstsaccade = true
-			push!(saccades, AlignedSaccade(float(_event.sttime-trialstart), _event.gstx, _event.gsty, 
-				  _event.genx, _event.geny,trialidx,:trialstart))
+			push!(saccades, AlignedSaccade(float(_event.sttime-trialstart), _event.gstx, _event.gsty, _event.genx, _event.geny,trialidx,:trialstart))
 		     push!(trialindex,trialidx)
 			# end
 
 		end
 	end
-	return saccades,trialindex
+	return saccades,trialindex, correct, target_row, target_col, distractor_row, distractor_col
+end
+
+function parsetrials{T<:String}(fnames::Array{T,1},args...)
+    saccades, trialindex, correct, distractor_row, distractor_col = parsetrials(fnames[1],args...)
+    for f in fnames[2:end]
+        _saccades, _trialindex, _correct, _distractor_row, _distractor_col = parsetrials(f,args...)
+        append!(saccades, _saccades)
+        append!(trialindex, _trialindex + trialindex[end])
+        append!(correct, _correct)
+        append!(distractor_row, _distractor_row)
+        append!(distractor_col, _distractor_col)
+    end
+    saccades, trialindex, correct, distractor_row, distractor_col
 end
 
 @doc meta("Return the x and y coordinates of the saccade end points. Note that y = 0 corresponds to the top of the screen")->
