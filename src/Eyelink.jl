@@ -130,6 +130,11 @@ function getscreensize(f::EDFFile;verbose::Integer=0)
 	end
 end
 
+function parsetrials(fname::String,args...)
+    f = edfopen(fname, 1, true, true)
+    parsetrials(f,args...)
+end
+
 function parsetrials(f::EDFFile)
 	trialstart = "00000000"
 	parsetrials(f, trialstart)
