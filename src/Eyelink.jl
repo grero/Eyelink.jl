@@ -12,17 +12,17 @@ const _library = "/Library/Frameworks/edfapi.framework/Versions/Current/edfapi"
 
 
 function version()
-	_version = ccall((:edf_get_version, _library), Ptr{Uint8}, ())
+	_version = ccall((:edf_get_version, _library), Ptr{UInt8}, ())
 	return bytestring(_version)
 end
 
-function edfopen(fname::String,consistency_check::Int64, load_events::Bool, load_samples::Bool)
+function edfopen(fname::AbstractString,consistency_check::Int64, load_events::Bool, load_samples::Bool)
 	err = 0
 	if !isfile(fname)
 		error("Could not open file $fname")
 		return nothing
 	end
-	f = ccall((:edf_open_file, _library),Ptr{Void}, (Ptr{Uint8}, Int64, Int64, Int64,Ptr{Int64}),fname,consistency_check,load_events,load_samples,&err)
+	f = ccall((:edf_open_file, _library),Ptr{Void}, (Ptr{UInt8}, Int64, Int64, Int64,Ptr{Int64}),fname,consistency_check,load_events,load_samples,&err)
 	if err != 0
 		error("Could not open file $fname")
 		return nothing
@@ -61,7 +61,7 @@ function edfdata(f::EDFFile)
 end
 
 function getmessages(f::EDFFile)
-	messages = Array(String,0)
+	messages = Array(AbstractString,0)
         timestamps = Array(Int64,0)
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
@@ -94,7 +94,7 @@ end
 
 function getmessage(event::FEVENT)
 	if get(datatypes,event.eventtype,:unknown) == :messageevent
-		return bytestring(convert(Ptr{Uint8}, event.message + sizeof(Uint16)), unsafe_load(convert(Ptr{Uint16}, event.message))), event.sttime
+		return bytestring(convert(Ptr{UInt8}, event.message + sizeof(UInt16)), unsafe_load(convert(Ptr{UInt16}, event.message))), event.sttime
 	end
 end
 
@@ -130,7 +130,7 @@ function getscreensize(f::EDFFile;verbose::Integer=0)
 	end
 end
 
-function parsetrials(fname::String,args...)
+function parsetrials(fname::AbstractString,args...)
     f = edfopen(fname, 1, true, true)
     parsetrials(f,args...)
 end
@@ -140,7 +140,7 @@ function parsetrials(f::EDFFile)
 	parsetrials(f, trialstart)
 end
 
-function parsetrials(f::EDFFile,trialmarker::String)
+function parsetrials(f::EDFFile,trialmarker::AbstractString)
 	trialidx = 0
 	trialevent = :none
 	firstsaccade = false
@@ -189,21 +189,21 @@ function parsetrials(f::EDFFile,trialmarker::String)
                                 t_col = 0
                         elseif m[1] == '1' && m[2] == '0'
                             if length(m) == 8
-                                d_row = parseint(m[8:-1:6],2)
-                                d_col = parseint(m[5:-1:3],2)
+                                d_row = parse(Int,m[8:-1:6],2)
+                                d_col = parse(Int,m[5:-1:3],2)
                             elseif length(m) == 14
-                                d_row = parseint(m[end:-1:9],2)
-                                d_col = parseint(m[8:-1:3],2)
+                                d_row = parse(Int,m[end:-1:9],2)
+                                d_col = parse(Int,m[8:-1:3],2)
                             end
                             distractor_row[trialidx] = d_row
                             distractor_col[trialidx] = d_col
                         elseif m[1] == '0' && m[2] == '1'
                             if length(m) == 8
-                                t_row = parseint(m[8:-1:6],2)
-                                t_col = parseint(m[5:-1:3],2)
+                                t_row = parse(Int,m[8:-1:6],2)
+                                t_col = parse(Int,m[5:-1:3],2)
                             elseif length(m) == 14
-                                t_row = parseint(m[end:-1:9],2)
-                                t_col = parseint(m[8:-1:3],2)
+                                t_row = parse(Int,m[end:-1:9],2)
+                                t_col = parse(Int,m[8:-1:3],2)
                             end
                             target_row[trialidx] = t_row
                             target_col[trialidx] = t_col
@@ -221,7 +221,7 @@ function parsetrials(f::EDFFile,trialmarker::String)
 	return saccades,trialindex, correct, target_row, target_col, distractor_row, distractor_col
 end
 
-function parsetrials{T<:String}(fnames::Array{T,1},args...)
+function parsetrials{T<:AbstractString}(fnames::Array{T,1},args...)
     saccades, trialindex, correct, target_row, target_col,distractor_row, distractor_col = parsetrials(fnames[1],args...)
     for f in fnames[2:end]
         _saccades, _trialindex, _correct, _target_row, _target_col, _distractor_row, _distractor_col = parsetrials(f,args...)

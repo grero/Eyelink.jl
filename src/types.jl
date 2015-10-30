@@ -16,14 +16,14 @@ datatypes = Dict{Int16, Symbol}(0 => :nopending,
 
 
 type EDFFile
-	fname::String
+	fname::AbstractString
 	ptr::Ptr{Void}
 	nevents::Int64
 	nsamples::Int64
 	nextevent::Symbol
 end
 
-function EDFFile(fname::String, ptr::Ptr)
+function EDFFile(fname::AbstractString, ptr::Ptr)
 	EDFFile(fname,ptr,0,0,:unknown)
 end
 
@@ -85,15 +85,15 @@ isempty{T<:AbstractSaccade}(S::T) = S.start_x == S.end_x & S.start_y == S.end_y
 
 type LSTRING
 	len::Int16
-	c::Uint8
+	c::UInt8
 end
 
 type FEVENT
-	time::Uint32
+	time::UInt32
 	eventtype::Int16
-	read::Uint16
-	sttime::Uint32
-	entime::Uint32
+	read::UInt16
+	sttime::UInt32
+	entime::UInt32
 	hstx::Float32
 	hsty::Float32
 	gstx::Float32
@@ -119,11 +119,11 @@ type FEVENT
 	eupdy::Float32
 
 	eye::Int16
-	status::Uint16
-	flags::Uint16
-	input::Uint16
-	buttons::Uint16
-	parsedby::Uint16
+	status::UInt16
+	flags::UInt16
+	input::UInt16
+	buttons::UInt16
+	parsedby::UInt16
 	message::Ptr{LSTRING}
 end
 
@@ -150,7 +150,7 @@ end
 
 
 type FSAMPLE
-        time::Uint32
+        time::UInt32
         #px::Array{Float32,1}
         px::float_vec2
         py::float_vec2
@@ -174,9 +174,9 @@ type FSAMPLE
         frxvel::float_vec2
         fryvel::float_vec2
         hdata::int_vec8
-        flags::Uint16
-        input::Uint16
-        buttons::Uint16
+        flags::UInt16
+        input::UInt16
+        buttons::UInt16
         htype::Int16
-        errors::Uint16
+        errors::UInt16
 end
