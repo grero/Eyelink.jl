@@ -209,12 +209,10 @@ function parsetrials(f::EDFFile,trialmarker::AbstractString)
                             target_col[trialidx] = t_col
 			end
 		elseif nextevent == :endsacc && trialevent != :none
-
-			#if !firstsaccade
-			#	firstsaccade = true
-			push!(saccades, AlignedSaccade(float(_event.sttime-trialstart), _event.gstx, _event.gsty, _event.genx, _event.geny,trialidx,:trialstart))
-		     push!(trialindex,trialidx)
-			# end
+            if _event.sttime > trialstart
+                push!(saccades, AlignedSaccade(float(_event.sttime)-float(trialstart), _event.gstx, _event.gsty, _event.genx, _event.geny,trialidx,:trialstart))
+                 push!(trialindex,trialidx)
+			end
 
 		end
 	end
