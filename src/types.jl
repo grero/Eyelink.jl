@@ -1,4 +1,5 @@
 import Base.zero, Base.isempty, Base.+
+using Compat
 
 datatypes = {0 => :nopending,
 			24 => :messageevent,
