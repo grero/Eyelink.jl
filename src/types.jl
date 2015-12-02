@@ -184,7 +184,7 @@ type FSAMPLE
         errors::UInt16
 end
 
-function save(f::FileIO.File{FileIO.DataFormat{:MAT}},saccades::Array{AlignedSaccade,1})
+function save{T<:AbstractSaccade}(f::FileIO.File{FileIO.DataFormat{:MAT}},saccades::Array{T,1})
     n = length(saccades)
     _time = Array(Float64,n)
     _start_x = Array(Float64,n)
@@ -192,7 +192,9 @@ function save(f::FileIO.File{FileIO.DataFormat{:MAT}},saccades::Array{AlignedSac
     _end_x = Array(Float64,n)
     _end_y = Array(Float64,n)
     _trialindex = Array(Int64,n)
-    _alignment = Array(ASCIIString,n)
+    if T <: AlignedSaccade
+        _alignment = Array(ASCIIString,n)
+    end
     for (i,s) in enumerate(saccades)
         _time[i] = s.time
         _start_x[i] = s.start_x
@@ -200,18 +202,31 @@ function save(f::FileIO.File{FileIO.DataFormat{:MAT}},saccades::Array{AlignedSac
         _end_x[i] = s.end_x
         _end_y[i] = s.end_y
         _trialindex[i] = s.trialindex
-        _alignment[i] = string(s.alignment)
+        if T <: AlignedSaccade
+            _alignment[i] = string(s.alignment)
+        end
     end
-    MAT.matwrite(f.filename, Dict([("time", _time), ("start_x", _start_x),
-                                   ("start_y", _start_y), ("end_x", _end_x),
-                                   ("end_y", _end_y), ("trialindex", _trialindex),
-                                   ("alignment", _alignment)]))
+    D = Dict()
+    D["time"] = _time
+    D["start_x"] = _start_x
+    D["start_y"] = _start_y
+    D["end_x"] = _end_x
+    D["end_y"] = _end_y
+    D["trialindex"] = _trialindex
+    if T <: AlignedSaccade
+        D["alignment"] = _alignment
+    end
+    MAT.matwrite(f.filename,D)
 end
 
 function load(f::FileIO.File{FileIO.DataFormat{:MAT}})
     M = MAT.matread(f.filename)
     n = length(M["time"])
-    saccades = Array(AlignedSaccade,n)
+    if "alignment" in keys(M)
+        saccades = Array(AlignedSaccade,n)
+    else
+        saccades = Array(Saccade,n)
+    end
     for i in 1:n
         _time = M["time"][i]
         _start_x = M["start_x"][i]
@@ -219,8 +234,12 @@ function load(f::FileIO.File{FileIO.DataFormat{:MAT}})
         _end_x = M["end_x"][i]
         _end_y = M["end_y"][i]
         _trialindex = M["trialindex"][i]
-        _alignment = M["alignment"][i]
-        saccades[i] = AlignedSaccade(_time,_start_x, _start_y, _end_x, _end_y, _trialindex, _alignment)
+        if eltype(saccades) <: AlignedSaccade
+            _alignment = M["alignment"][i]
+            saccades[i] = AlignedSaccade(_time,_start_x, _start_y, _end_x, _end_y, _trialindex, _alignment)
+        else
+            saccades[i] = Saccade(_time,_start_x, _start_y, _end_x, _end_y, _trialindex)
+        end
     end
     saccades
 end
