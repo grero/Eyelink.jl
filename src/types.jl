@@ -1,4 +1,7 @@
 import Base.zero, Base.isempty, Base.+
+import FileIO
+import MAT
+import FileIO.save
 
 datatypes = Dict{Int16, Symbol}(0 => :nopending,
 			24 => :messageevent,
@@ -179,4 +182,45 @@ type FSAMPLE
         buttons::UInt16
         htype::Int16
         errors::UInt16
+end
+
+function save(f::FileIO.File{FileIO.DataFormat{:MAT}},saccades::Array{AlignedSaccade,1})
+    n = length(saccades)
+    _time = Array(Float64,n)
+    _start_x = Array(Float64,n)
+    _start_y = Array(Float64,n)
+    _end_x = Array(Float64,n)
+    _end_y = Array(Float64,n)
+    _trialindex = Array(Int64,n)
+    _alignment = Array(ASCIIString,n)
+    for (i,s) in enumerate(saccades)
+        _time[i] = s.time
+        _start_x[i] = s.start_x
+        _start_y[i] = s.start_y
+        _end_x[i] = s.end_x
+        _end_y[i] = s.end_y
+        _trialindex[i] = s.trialindex
+        _alignment[i] = string(s.alignment)
+    end
+    MAT.matwrite(f.filename, Dict([("time", _time), ("start_x", _start_x),
+                                   ("start_y", _start_y), ("end_x", _end_x),
+                                   ("end_y", _end_y), ("trialindex", _trialindex),
+                                   ("alignment", _alignment)]))
+end
+
+function load(f::FileIO.File{FileIO.DataFormat{:MAT}})
+    M = MAT.matread(f.filename)
+    n = length(M["time"])
+    saccades = Array(AlignedSaccade,n)
+    for i in 1:n
+        _time = M["time"][i]
+        _start_x = M["start_x"][i]
+        _start_y = M["start_y"][i]
+        _end_x = M["end_x"][i]
+        _end_y = M["end_y"][i]
+        _trialindex = M["trialindex"][i]
+        _alignment = M["alignment"][i]
+        saccades[i] = AlignedSaccade(_time,_start_x, _start_y, _end_x, _end_y, _trialindex, _alignment)
+    end
+    saccades
 end
