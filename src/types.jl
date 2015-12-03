@@ -1,4 +1,4 @@
-import Base.zero, Base.isempty, Base.+
+import Base.zero, Base.isempty, Base.+, Base.convert
 import FileIO
 import MAT
 import FileIO.save
@@ -185,6 +185,21 @@ type FSAMPLE
 end
 
 function save{T<:AbstractSaccade}(f::FileIO.File{FileIO.DataFormat{:MAT}},saccades::Array{T,1})
+    D = convert(Dict, saccades)
+    MAT.matwrite(f.filename,D)
+end
+
+function load(f::FileIO.File{FileIO.DataFormat{:MAT}})
+    M = MAT.matread(f.filename)
+    if "alignment" in keys(M)
+        saccades = convert(Array{AlignedSaccade,1}, M)
+    else
+        saccades = convert(Array{Saccade,1}, M)
+    end
+    saccades
+end
+
+function convert{T<:AbstractSaccade}(::Type{Dict}, saccades::Array{T,1})
     n = length(saccades)
     _time = Array(Float64,n)
     _start_x = Array(Float64,n)
@@ -216,11 +231,13 @@ function save{T<:AbstractSaccade}(f::FileIO.File{FileIO.DataFormat{:MAT}},saccad
     if T <: AlignedSaccade
         D["alignment"] = _alignment
     end
-    MAT.matwrite(f.filename,D)
+    D
 end
 
-function load(f::FileIO.File{FileIO.DataFormat{:MAT}})
-    M = MAT.matread(f.filename)
+function convert{T<:AbstractSaccade}(::Type{Array{T,1}}, M::Dict)
+    if issubset(map(symbol,keys(M)), fieldnames(T)) == false
+        throw(ArgumentError("D does not contain the fields necessary to convert to $(T)"))
+    end
     n = length(M["time"])
     if "alignment" in keys(M)
         saccades = Array(AlignedSaccade,n)
@@ -243,3 +260,4 @@ function load(f::FileIO.File{FileIO.DataFormat{:MAT}})
     end
     saccades
 end
+
