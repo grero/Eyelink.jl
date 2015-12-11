@@ -1,6 +1,7 @@
 module Eyelink
 import GUICheck
 using Docile
+using Compat
 @docstrings
 include("types.jl")
 
@@ -16,7 +17,7 @@ function version()
 	return bytestring(_version)
 end
 
-function edfopen(fname::AbstractString,consistency_check::Int64, load_events::Bool, load_samples::Bool)
+function edfopen(fname::ASCIIString,consistency_check::Int64, load_events::Bool, load_samples::Bool)
 	err = 0
 	if !isfile(fname)
 		error("Could not open file $fname")
@@ -130,7 +131,7 @@ function getscreensize(f::EDFFile;verbose::Integer=0)
 	end
 end
 
-function parsetrials(fname::AbstractString,args...)
+function parsetrials(fname::ASCIIString,args...)
     f = edfopen(fname, 1, true, true)
     parsetrials(f,args...)
 end
