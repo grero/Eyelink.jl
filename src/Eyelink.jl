@@ -147,20 +147,22 @@ function parsetrials(f::EDFFile,trialmarker::AbstractString)
 	saccades = Array(AlignedSaccade,0)
 	trialindex = Array(Int64,0)
 	correct = Array(Bool,0)
-        distractor_row = Array(Int64,0)
-        distractor_col = Array(Int64,0)
-        target_row = Array(Int64,0)
-        target_col = Array(Int64,0)
+    distractor_row = Array(Int64,0)
+    distractor_col = Array(Int64,0)
+    target_row = Array(Int64,0)
+    target_col = Array(Int64,0)
+    messages = Array(ASCIIString,0)
 	trialstart = 0
-        d_row = 0
-        d_col = 0
-        t_row = 0
-        t_col = 0
+    d_row = 0
+    d_col = 0
+    t_row = 0
+    t_col = 0
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
 		_event= edfdata(f)
 		if nextevent == :messageevent
 			message,tt = getmessage(_event)
+            push!(messages,message)
 			#check what the message is
 			m = message[1:3:end]
 			if m == trialmarker #trial start
@@ -216,22 +218,16 @@ function parsetrials(f::EDFFile,trialmarker::AbstractString)
 
 		end
 	end
-	return saccades,trialindex, correct, target_row, target_col, distractor_row, distractor_col
+    return EyelinkTrialData(saccades,trialindex, correct,target_row, target_col, distractor_row, distractor_col,messages)
 end
 
-function parsetrials{T<:AbstractString}(fnames::Array{T,1},args...)
-    saccades, trialindex, correct, target_row, target_col,distractor_row, distractor_col = parsetrials(fnames[1],args...)
+function parsetrials(fnames::Array{ASCIIString,1},args...)
+    eyelinkdata = parsetrials(fnames[1],args...)
     for f in fnames[2:end]
-        _saccades, _trialindex, _correct, _target_row, _target_col, _distractor_row, _distractor_col = parsetrials(f,args...)
-        append!(saccades, _saccades)
-        append!(trialindex, _trialindex + trialindex[end])
-        append!(correct, _correct)
-        append!(target_row, _target_row)
-        append!(target_col, _target_col)
-        append!(distractor_row, _distractor_row)
-        append!(distractor_col, _distractor_col)
+        _eyelinkdata = parsetrials(f,args...)
+        append!(eyelinkdata, _eyelinkdata)
     end
-    saccades, trialindex, correct, target_row, target_col, distractor_row, distractor_col
+    eyelinkdata
 end
 
 Docile.@doc meta("Return the x and y coordinates of the saccade end points. Note that y = 0 corresponds to the top of the screen")->

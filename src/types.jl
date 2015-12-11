@@ -1,4 +1,4 @@
-import Base.zero, Base.isempty, Base.+, Base.convert
+import Base.zero, Base.isempty, Base.+, Base.convert, Base.append!
 import FileIO
 import MAT
 import FileIO.save
@@ -85,6 +85,28 @@ function zero(::Type{AlignedSaccade})
 end
 
 isempty{T<:AbstractSaccade}(S::T) = S.start_x == S.end_x & S.start_y == S.end_y
+
+type EyelinkTrialData
+    saccades::Array{AlignedSaccade,1}
+    trialindex::Array{Int64,1}
+    correct::Array{Bool,1}
+    target_row::Array{Int64,1}
+    target_col::Array{Int64,1}
+    distractor_row::Array{Int64,1}
+    distractor_col::Array{Int64,1}
+    messages::Array{ASCIIString,1}
+end
+
+function append!(data1::EyelinkTrialData, data2::EyelinkTrialData)
+    append!(data1.saccades, data2.saccades)
+    append!(data1.trialindex, data2.trialindex + data1.trialindex[end])
+    append!(data1.correct, data2.correct)
+    append!(data1.target_row, data2.target_row)
+    append!(data1.target_col, data2.target_col)
+    append!(data1.distractor_row, data2.distractor_row)
+    append!(data1.distractor_col, data2.distractor_col)
+    append!(data1.messages, data2.messages)
+end
 
 type LSTRING
 	len::Int16
