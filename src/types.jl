@@ -98,7 +98,11 @@ type EyelinkTrialData
 end
 
 function append!(data1::EyelinkTrialData, data2::EyelinkTrialData)
-    append!(data1.saccades, data2.saccades)
+    for s in data2.saccades
+        s2 = deepcopy(s)
+        s2.trialindex += data1.trialindex[end] #make sure we update the trialindex
+        push!(data1.saccades,s2)
+    end
     append!(data1.trialindex, data2.trialindex + data1.trialindex[end])
     append!(data1.correct, data2.correct)
     append!(data1.target_row, data2.target_row)
