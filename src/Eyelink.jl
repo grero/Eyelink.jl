@@ -122,7 +122,7 @@ function getscreensize(f::EDFFile;verbose::Integer=0)
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
 		if nextevent == :messageevent
-			msg = getmessage(edfdata(f))
+			msg,t = getmessage(edfdata(f))
 			if contains(msg, "DISPLAY_COORDS")
 				pp = split(strip(msg,'\0'))
 				return int(pp[end-1])+1,int(pp[end])+1
