@@ -75,6 +75,18 @@ function getmessages(f::EDFFile)
 	messages,timestamps
 end
 
+function getsaccades(f::EDFFile)
+	saccades = Array(Saccade, 0)
+	while f.nextevent != :nopending
+		nextevent = edfnextdata!(f)
+		_event= edfdata(f)
+		if nextevent == :endsacc
+			push!(saccades, Saccade(float(_event.sttime), _event.gstx, _event.gsty, _event.genx, _event.geny,0))
+		end
+	end
+	saccades
+end
+
 function getgazepos(f::EDFFile)
     gazex = Array(Float32,0)
     gazey = Array(Float32,0)
