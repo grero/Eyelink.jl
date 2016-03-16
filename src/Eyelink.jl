@@ -81,7 +81,7 @@ function getsaccades(f::EDFFile)
 		nextevent = edfnextdata!(f)
 		_event= edfdata(f)
 		if nextevent == :endsacc
-			push!(saccades, Saccade(float(_event.sttime), _event.gstx, _event.gsty, _event.genx, _event.geny,0))
+			push!(saccades, Saccade(float(_event.sttime), float(_event.entime), _event.gstx, _event.gsty, _event.genx, _event.geny,0))
 		end
 	end
 	saccades
