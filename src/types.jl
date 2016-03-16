@@ -39,13 +39,16 @@ end
 abstract AbstractSaccade
 
 type Saccade <: AbstractSaccade
-	time::Float64
+	start_time::Float64
+	end_time::Float64
 	start_x::Float32
 	start_y::Float32
 	end_x::Float32
 	end_y::Float32
 	trialindex::Int64
 end
+
+Saccade(time::Float64, start_x, start_y, end_x, end_y, trialindex) = Saccade(time, 0.0, start_x, start_y, end_x, end_y, trialindex)
 
 type AlignedSaccade <: AbstractSaccade
 	time::Float64
