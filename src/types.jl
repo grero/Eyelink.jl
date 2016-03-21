@@ -51,7 +51,8 @@ end
 Saccade(time::Float64, start_x, start_y, end_x, end_y, trialindex) = Saccade(time, 0.0, start_x, start_y, end_x, end_y, trialindex)
 
 type AlignedSaccade <: AbstractSaccade
-	time::Float64
+	start_time::Float64
+	end_time::Float64
 	start_x::Float32
 	start_y::Float32
 	end_x::Float32
@@ -59,6 +60,8 @@ type AlignedSaccade <: AbstractSaccade
 	trialindex::Int64
 	alignment::Symbol
 end
+
+AlignedSaccade(time, start_x, start_y, end_x, end_y, trialindex, alignment) = AlignedSaccade(time, 0.0, start_x, start_y, end_y, end_y, trialindex, alignment)
 
 +(s::Saccade, t::Real) = Saccade(s.time + t, s.start_x, s.start_y, s.end_x, s.end_y, s.trialindex)
 +(s::AlignedSaccade, t::Real) = AlignedSaccade(s.time + t, s.start_x, s.start_y, s.end_x, s.end_y, s.trialindex, s.alignment)
