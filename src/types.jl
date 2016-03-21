@@ -267,17 +267,26 @@ function convert{T<:AbstractSaccade}(::Type{Dict}, saccades::Array{T,1})
 end
 
 function convert{T<:AbstractSaccade}(::Type{Array{T,1}}, M::Dict)
-    if issubset(map(symbol,keys(M)), fieldnames(T)) == false
-        throw(ArgumentError("D does not contain the fields necessary to convert to $(T)"))
-    end
-    n = length(M["time"])
+		if "time" in keys(M)
+			n = length(M["time"])
+		elseif "start_time" in keys(M)
+			n = length(M["start_time"])
+		else
+			throw(ArgumentError("No valid objects of type $T found"))
+		end
     if "alignment" in keys(M)
         saccades = Array(AlignedSaccade,n)
     else
         saccades = Array(Saccade,n)
     end
     for i in 1:n
-        _time = M["time"][i]
+				if "start_time" in keys(M)
+					start_time = M["start_time"][i]
+					end_time = M["end_time"][i]
+				else
+					start_time = M["time"][i]
+					end_time = 0.0
+				end
         _start_x = M["start_x"][i]
         _start_y = M["start_y"][i]
         _end_x = M["end_x"][i]
@@ -285,9 +294,9 @@ function convert{T<:AbstractSaccade}(::Type{Array{T,1}}, M::Dict)
         _trialindex = M["trialindex"][i]
         if eltype(saccades) <: AlignedSaccade
             _alignment = M["alignment"][i]
-            saccades[i] = AlignedSaccade(_time,_start_x, _start_y, _end_x, _end_y, _trialindex, _alignment)
+						saccades[i] = AlignedSaccade(start_time, end_time, _start_x, _start_y, _end_x, _end_y, _trialindex, _alignment)
         else
-            saccades[i] = Saccade(_time,_start_x, _start_y, _end_x, _end_y, _trialindex)
+					saccades[i] = Saccade(start_time,end_time, _start_x, _start_y, _end_x, _end_y, _trialindex)
         end
     end
     saccades
