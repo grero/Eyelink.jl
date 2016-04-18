@@ -67,17 +67,17 @@ AlignedSaccade(time, start_x, start_y, end_x, end_y, trialindex, alignment) = Al
 +(s::AlignedSaccade, t::Real) = AlignedSaccade(s.time + t, s.start_x, s.start_y, s.end_x, s.end_y, s.trialindex, s.alignment)
 
 function Saccade(s::AlignedSaccade)
-	Saccade(s.time, s.start_x, s.start_y, s.end_x, s.end_y, s.trialindex)
+	Saccade(s.start_time, s.end_time, s.start_x, s.start_y, s.end_x, s.end_y, s.trialindex)
 end
 
 function Saccade(s::AlignedSaccade,t0::Real)
-	Saccade(s.time + t0, s.start_x, s.start_y, s.end_x, s.end_y, s.trialindex)
+	Saccade(s.start_time + t0, s.end_time + t0, s.start_x, s.start_y, s.end_x, s.end_y, s.trialindex)
 end
 
 function gettime{T<:AbstractSaccade}(S::Array{T,1})
 	time = zeros(length(S))
 	for (i,s) in enumerate(S)
-		time[i] = s.time
+		time[i] = s.start_time
 	end
 	return time
 end
@@ -233,7 +233,8 @@ end
 
 function convert{T<:AbstractSaccade}(::Type{Dict}, saccades::Array{T,1})
     n = length(saccades)
-    _time = Array(Float64,n)
+    _start_time = Array(Float64,n)
+    _end_time = Array(Float64,n)
     _start_x = Array(Float64,n)
     _start_y = Array(Float64,n)
     _end_x = Array(Float64,n)
@@ -243,7 +244,8 @@ function convert{T<:AbstractSaccade}(::Type{Dict}, saccades::Array{T,1})
         _alignment = Array(ASCIIString,n)
     end
     for (i,s) in enumerate(saccades)
-        _time[i] = s.time
+        _start_time[i] = s.start_time
+		_end_time[i] = s.end_time
         _start_x[i] = s.start_x
         _start_y[i] = s.start_y
         _end_x[i] = s.end_x
@@ -254,7 +256,8 @@ function convert{T<:AbstractSaccade}(::Type{Dict}, saccades::Array{T,1})
         end
     end
     D = Dict()
-    D["time"] = _time
+    D["start_time"] = _start_time
+	D["end_time"] = _end_time
     D["start_x"] = _start_x
     D["start_y"] = _start_y
     D["end_x"] = _end_x

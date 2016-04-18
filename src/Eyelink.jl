@@ -225,7 +225,7 @@ function parsetrials(f::EDFFile,trialmarker::AbstractString)
 			end
 		elseif nextevent == :endsacc && trialevent != :none
             if _event.sttime > trialstart
-                push!(saccades, AlignedSaccade(float(_event.sttime)-float(trialstart), _event.gstx, _event.gsty, _event.genx, _event.geny,trialidx,:trialstart))
+                push!(saccades, AlignedSaccade(float(_event.sttime)-float(trialstart), float(_event.entime) -float(trialstart),_event.gstx, _event.gsty, _event.genx, _event.geny,trialidx,:trialstart))
                  push!(trialindex,trialidx)
 			end
 
@@ -242,6 +242,7 @@ function parsetrials(fnames::Array{ASCIIString,1},args...)
     end
     eyelinkdata
 end
+
 
 Docile.@doc meta("Return the x and y coordinates of the saccade end points. Note that y = 0 corresponds to the top of the screen")->
 function get_saccade_position{T<:AbstractSaccade}(saccades::Array{T,1})
