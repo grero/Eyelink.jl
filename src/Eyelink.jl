@@ -225,7 +225,7 @@ function parsetrials(f::EDFFile,trialmarker::AbstractString)
 			end
 		elseif nextevent == :endsacc && trialevent != :none
             if _event.sttime > trialstart
-                push!(saccades, AlignedSaccade(float(_event.sttime)-float(trialstart), float(_event.entime) -float(trialstart),_event.gstx, _event.gsty, _event.genx, _event.geny,trialidx,:trialstart))
+                push!(saccades, AlignedSaccade(float(_event.sttime)-float(trialstart), float(_event.entime) -float(trialstart),_event.gstx, _event.gsty, _event.genx, _event.geny,trialidx,:start))
                  push!(trialindex,trialidx)
 			end
 
