@@ -74,6 +74,10 @@ function Saccade(s::AlignedSaccade,t0::Real)
 	Saccade(s.start_time + t0, s.end_time + t0, s.start_x, s.start_y, s.end_x, s.end_y, s.trialindex)
 end
 
+function AlignedSaccade(s::Saccade, t0::Real, alignment::Symbol)
+	AlignedSaccade(s.start_time -t0, s.end_time-t0, s.start_x, s.start_y, s.end_x, s.end_y, s.trialindex, alignment)
+end
+
 function gettime{T<:AbstractSaccade}(S::Array{T,1})
 	time = zeros(length(S))
 	for (i,s) in enumerate(S)
