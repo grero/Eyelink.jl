@@ -105,7 +105,10 @@ type EyelinkTrialData
     distractor_row::Array{Int64,1}
     distractor_col::Array{Int64,1}
     messages::Array{ASCIIString,1}
+		timestamps::Array{Int64,1}
 end
+
+EyelinkTrialData(saccades, trialindex, correct, target_row, target_col, distractor_row, distractor_col, messsages) = EyelinkTrialData(sacacdes, trialindex, correct, target_row, target_col, distractor_row, distractor_col, messages, zeros(Int64,length(messages)))
 
 function append!(data1::EyelinkTrialData, data2::EyelinkTrialData)
     for s in data2.saccades
@@ -271,33 +274,37 @@ end
 
 type Samples
 	time::Array{UInt32,1}
-	px::Array{Array{Float64,1},1}
-	py::Array{Array{Float64,1},1}
-	hx::Array{Array{Float64,1},1}
-	hy::Array{Array{Float64,1},1}
-	pa::Array{Array{Float64,1},1}
-	gx::Array{Array{Float64,1},1}
-	gy::Array{Array{Float64,1},1}
+	px::Array{Float64,2}
+	py::Array{Float64,2}
+	hx::Array{Float64,2}
+	hy::Array{Float64,2}
+	pa::Array{Float64,2}
+	gx::Array{Float64,2}
+	gy::Array{Float64,2}
 	rx::Array{Float64,1}
 	ry::Array{Float64,1}
-	gxvel::Array{Array{Float64,1},1}
-	gyvel::Array{Array{Float64,1},1}
-	hxvel::Array{Array{Float64,1},1}
-	hyvel::Array{Array{Float64,1},1}
-	rxvel::Array{Array{Float64,1},1}
-	ryvel::Array{Array{Float64,1},1}
-	fgxvel::Array{Array{Float64,1},1}
-	fgyvel::Array{Array{Float64,1},1}
-	fhxvel::Array{Array{Float64,1},1}
-	fhyvel::Array{Array{Float64,1},1}
-	frxvel::Array{Array{Float64,1},1}
-	fryvel::Array{Array{Float64,1},1}
+	gxvel::Array{Float64,2}
+	gyvel::Array{Float64,2}
+	hxvel::Array{Float64,2}
+	hyvel::Array{Float64,2}
+	rxvel::Array{Float64,2}
+	ryvel::Array{Float64,2}
+	fgxvel::Array{Float64,2}
+	fgyvel::Array{Float64,2}
+	fhxvel::Array{Float64,2}
+	fhyvel::Array{Float64,2}
+	frxvel::Array{Float64,2}
+	fryvel::Array{Float64,2}
 end
 
 function Samples(n::Integer)
 	args = Any[]
 	for ff in fieldnames(Samples)
-		push!(args, fieldtype(Samples, ff)(n))
+		if fieldtype(Samples, ff) <: Array{Float64,2}
+			push!(args, zeros(2,n))
+		else
+			push!(args, fieldtype(Samples, ff)(n))
+		end
 	end
 	Samples(args...)
 end
@@ -309,7 +316,8 @@ function Samples(fsamples::Array{FSAMPLE,1})
 		for ff in _fieldnames
 			if fieldtype(FSAMPLE, ff) <: float_vec2
 				qq = getfield(fsamples[i],ff)
-				getfield(samples, ff)[i] = [qq.x1, qq.x2]
+				getfield(samples, ff)[1,i] = qq.x1
+				getfield(samples, ff)[2,i] = qq.x2
 			else
 				getfield(samples,ff)[i] = getfield(fsamples[i],ff)
 			end
