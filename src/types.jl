@@ -212,7 +212,7 @@ function Event(fevent::FEVENT)
 	for ff in setdiff(fieldnames(Event), [:message, :eventtype])
 		push!(args,getfield(fevent,ff))
 	end
-	push!(args, message)
+	push!(args, strip(message, '\0'))
 	push!(args, eventtype)
 	Event(args...)
 end
