@@ -1,4 +1,4 @@
-import Base.zero, Base.isempty, Base.+, Base.convert, Base.append!
+import Base.zero, Base.isempty, Base.+, Base.convert, Base.append!, Base.push!
 import FileIO
 import MAT
 import FileIO.save
@@ -122,6 +122,38 @@ function append!(data1::EyelinkTrialData, data2::EyelinkTrialData)
     append!(data1.messages, data2.messages)
 end
 
+type Event
+	time::UInt32
+	sttime::UInt32
+	entime::UInt32
+	hstx::Float32
+	hsty::Float32
+	gstx::Float32
+	gsty::Float32
+	sta::Float32
+	henx::Float32
+	heny::Float32
+	genx::Float32
+	geny::Float32
+	ena::Float32
+	havx::Float32
+	havy::Float32
+	gavx::Float32
+	gavy::Float32
+	ava::Float32
+	avel::Float32
+	pvel::Float32
+	svel::Float32
+	evel::Float32
+	supdx::Float32
+	eupdx::Float32
+	supdy::Float32
+	eupdy::Float32
+	eye::Int16
+	message::ASCIIString
+	eventtype::Symbol
+end
+
 type LSTRING
 	len::Int16
 	c::UInt8
@@ -165,6 +197,23 @@ type FEVENT
 	parsedby::UInt16
 	message::Ptr{LSTRING}
 end
+
+function Event(fevent::FEVENT)
+	eventtype = get(datatypes,fevent.eventtype,:none)
+	if eventtype == :messageevent
+		message,tt = getmessage(fevent)
+	else
+		message = ""
+	end
+	args = Any[]
+	for ff in setdiff(fieldnames(Event), [:message, :eventtype])
+		push!(args,getfield(fevent,ff))
+	end
+	push!(args, message)
+	push!(args, eventtype)
+	Event(args...)
+end
+
 
 immutable float_vec2
     x1::Float32
@@ -219,6 +268,68 @@ type FSAMPLE
         htype::Int16
         errors::UInt16
 end
+
+type Samples
+	time::Array{UInt32,1}
+	px::Array{Array{Float64,1},1}
+	py::Array{Array{Float64,1},1}
+	hx::Array{Array{Float64,1},1}
+	hy::Array{Array{Float64,1},1}
+	pa::Array{Array{Float64,1},1}
+	gx::Array{Array{Float64,1},1}
+	gy::Array{Array{Float64,1},1}
+	rx::Array{Float64,1}
+	ry::Array{Float64,1}
+	gxvel::Array{Array{Float64,1},1}
+	gyvel::Array{Array{Float64,1},1}
+	hxvel::Array{Array{Float64,1},1}
+	hyvel::Array{Array{Float64,1},1}
+	rxvel::Array{Array{Float64,1},1}
+	ryvel::Array{Array{Float64,1},1}
+	fgxvel::Array{Array{Float64,1},1}
+	fgyvel::Array{Array{Float64,1},1}
+	fhxvel::Array{Array{Float64,1},1}
+	fhyvel::Array{Array{Float64,1},1}
+	frxvel::Array{Array{Float64,1},1}
+	fryvel::Array{Array{Float64,1},1}
+end
+
+function Samples(n::Integer)
+	args = Any[]
+	for ff in fieldnames(Samples)
+		push!(args, fieldtype(Samples, ff)(n))
+	end
+	Samples(args...)
+end
+
+function Samples(fsamples::Array{FSAMPLE,1})
+	samples = Samples(length(fsamples))
+	_fieldnames = fieldnames(Samples)
+	for i in 1:length(fsamples)
+		for ff in _fieldnames
+			if fieldtype(FSAMPLE, ff) <: float_vec2
+				qq = getfield(fsamples[i],ff)
+				getfield(samples, ff)[i] = [qq.x1, qq.x2]
+			else
+				getfield(samples,ff)[i] = getfield(fsamples[i],ff)
+			end
+		end
+	end
+	samples
+end
+
+function push!(samples::Samples, fsample::FSAMPLE)
+	qq = Array(Float64,2)
+	for ff in fieldnames(samples)
+		if fieldtype(FSAMPLE, ff) <: float_vec2
+			qq = getfield(fsample,ff)
+			push!(getfield(samples,ff), [qq.x1, qq.x2])
+		else
+			push!(getfield(samples,ff), getfield(fsample,ff))
+		end
+	end
+end
+
 
 function save{T<:AbstractSaccade}(f::FileIO.File{FileIO.DataFormat{:MAT}},saccades::Array{T,1})
     D = convert(Dict, saccades)

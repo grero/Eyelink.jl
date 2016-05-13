@@ -40,6 +40,34 @@ function edfclose(f::EDFFile)
 	end
 end
 
+function edfload(edffile::EDFFile)
+	f = edffile
+	#samples = Samples(0) 
+	samples = Array(FSAMPLE,0)
+	events = Array(Event,0)
+	while f.nextevent != :nopending
+		nextevent = edfnextdata!(f)
+		if nextevent == :sample_type
+			_sample = edfdata(f)
+			push!(samples, _sample)
+
+		elseif nextevent == :recording_info
+			#nothing
+		elseif nextevent == :no_pending_items
+			#ntohing
+		else #event
+			_event = edfdata(f)
+			push!(events, Event(_event))
+		end
+	end
+	Dict([("events", events), ("samples", samples)])
+end
+
+function load(f::AbstractString,check=1, load_events=true,load_samples=true)
+	edffile = edfopen(f, check, load_events, load_samples)
+	data = edfload(edffile)
+end
+
 function edfnextdata!(f::EDFFile) 
 	eventtype = ccall((:edf_get_next_data, _library), Int64, (Ptr{Void},), f.ptr)
 	f.nextevent =  get(datatypes,eventtype,:unknown)
