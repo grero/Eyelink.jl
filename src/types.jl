@@ -108,6 +108,7 @@ type EyelinkTrialData
 		timestamps::Array{Int64,1}
 end
 
+
 EyelinkTrialData(saccades, trialindex, correct, target_row, target_col, distractor_row, distractor_col, messsages) = EyelinkTrialData(sacacdes, trialindex, correct, target_row, target_col, distractor_row, distractor_col, messages, zeros(Int64,length(messages)))
 
 function append!(data1::EyelinkTrialData, data2::EyelinkTrialData)
@@ -426,5 +427,10 @@ function convert{T<:AbstractSaccade}(::Type{Array{T,1}}, M::Dict)
         end
     end
     saccades
+end
+
+type EyelinkData
+	events::Array{Event,1}
+	samples::Samples
 end
 
