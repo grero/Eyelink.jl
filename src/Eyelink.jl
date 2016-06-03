@@ -2,6 +2,7 @@ module Eyelink
 import GUICheck
 using Docile
 using Compat
+using JLD
 @docstrings
 include("types.jl")
 
@@ -64,8 +65,19 @@ function edfload(edffile::EDFFile)
 end
 
 function load(f::AbstractString,check=1, load_events=true,load_samples=true)
-	edffile = edfopen(f, check, load_events, load_samples)
-	data = edfload(edffile)
+	_path,_ext = splitdir(f)
+	samplefile = joinpath(_path, "eyesamples.jd")
+	if isfile(samplefile)
+		ss = JLD.load(samplefile, "ss")
+		edffile = edfopen(f, check, true, false)
+		data = edfload(edffile)
+		println(typeof(data))
+		data["samples"] = ss
+	else
+		edffile = edfopen(f, check, true, true)
+		data = edfload(edffile)
+	end
+	data
 end
 
 function edfnextdata!(f::EDFFile) 
