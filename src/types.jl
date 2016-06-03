@@ -108,8 +108,7 @@ type EyelinkTrialData
 		timestamps::Array{Int64,1}
 end
 
-
-EyelinkTrialData(saccades, trialindex, correct, target_row, target_col, distractor_row, distractor_col, messsages) = EyelinkTrialData(sacacdes, trialindex, correct, target_row, target_col, distractor_row, distractor_col, messages, zeros(Int64,length(messages)))
+EyelinkTrialData(saccades, trialindex, correct, target_row, target_col, distractor_row, distractor_col, messages) = EyelinkTrialData(saccades, trialindex, correct, target_row, target_col, distractor_row, distractor_col, messages, zeros(Int64,length(messages)))
 
 function append!(data1::EyelinkTrialData, data2::EyelinkTrialData)
     for s in data2.saccades
