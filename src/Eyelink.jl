@@ -127,6 +127,16 @@ function getsaccades(f::EDFFile)
 	saccades
 end
 
+function getsaccades(events::Array{Event,1})
+	saccades = Array(Saccade, 0)
+	for ee in events
+		if ee.eventtype == :endsacc
+			push!(saccades, Saccade(float(_event.sttime), float(_event.entime), _event.gstx, _event.gsty, _event.genx, _event.geny,0))
+		end
+	end
+	saccades
+end
+
 function getgazepos(f::EDFFile)
     gazex = Array(Float32,0)
     gazey = Array(Float32,0)
