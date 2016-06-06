@@ -82,6 +82,11 @@ function load(f::AbstractString,check=1, load_events=true,load_samples=true)
 	eyedata
 end
 
+function save(f::FileIO.File{FileIO.DataFormat{:JLD}},events::Array{Event,1}, samples::Array{FSAMPLE,1}) 
+	ss = Samples(samples)
+	JLD.save(f, EyelinkData(events,ss))
+end
+
 function edfnextdata!(f::EDFFile) 
 	eventtype = ccall((:edf_get_next_data, _library), Int64, (Ptr{Void},), f.ptr)
 	f.nextevent =  get(datatypes,eventtype,:unknown)
