@@ -2,7 +2,7 @@ module Eyelink
 import GUICheck
 using Docile
 using Compat
-using JLD
+using FileIO,JLD
 @docstrings
 include("types.jl")
 
@@ -71,13 +71,15 @@ function load(f::AbstractString,check=1, load_events=true,load_samples=true)
 		ss = JLD.load(samplefile, "ss")
 		edffile = edfopen(f, check, true, false)
 		data = edfload(edffile)
-		println(typeof(data))
-		data["samples"] = ss
+		eyedata = EyelinkData(data["events"],ss)
 	else
 		edffile = edfopen(f, check, true, true)
 		data = edfload(edffile)
+		ss = Samples(data["samples"])
+		JLD.save(FileIO.File(format"JLD", samplefile), Dict([("ss", ss)]))
+		eyedata = EyelinkData(data["events"], ss)
 	end
-	data
+	eyedata
 end
 
 function edfnextdata!(f::EDFFile) 
