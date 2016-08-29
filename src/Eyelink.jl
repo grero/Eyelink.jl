@@ -1,6 +1,8 @@
 module Eyelink
 import GUICheck
 using Docile
+using Compat
+using FileIO,JLD
 @docstrings
 include("types.jl")
 
@@ -12,17 +14,17 @@ const _library = "/Library/Frameworks/edfapi.framework/Versions/Current/edfapi"
 
 
 function version()
-	_version = ccall((:edf_get_version, _library), Ptr{Uint8}, ())
+	_version = ccall((:edf_get_version, _library), Ptr{UInt8}, ())
 	return bytestring(_version)
 end
 
-function edfopen(fname::String,consistency_check::Int64, load_events::Bool, load_samples::Bool)
+function edfopen(fname::ASCIIString,consistency_check::Int64, load_events::Bool, load_samples::Bool)
 	err = 0
 	if !isfile(fname)
 		error("Could not open file $fname")
 		return nothing
 	end
-	f = ccall((:edf_open_file, _library),Ptr{Void}, (Ptr{Uint8}, Int64, Int64, Int64,Ptr{Int64}),fname,consistency_check,load_events,load_samples,&err)
+	f = ccall((:edf_open_file, _library),Ptr{Void}, (Ptr{UInt8}, Int64, Int64, Int64,Ptr{Int64}),fname,consistency_check,load_events,load_samples,&err)
 	if err != 0
 		error("Could not open file $fname")
 		return nothing
@@ -37,6 +39,52 @@ function edfclose(f::EDFFile)
 	if err != 0
 		error("Could not close file $(EDFFile.fname)")
 	end
+end
+
+function edfload(edffile::EDFFile)
+	f = edffile
+	#samples = Samples(0) 
+	samples = Array(FSAMPLE,0)
+	events = Array(Event,0)
+	while f.nextevent != :nopending
+		nextevent = edfnextdata!(f)
+		if nextevent == :sample_type
+			_sample = edfdata(f)
+			push!(samples, _sample)
+
+		elseif nextevent == :recording_info
+			#nothing
+		elseif nextevent == :no_pending_items
+			#ntohing
+		else #event
+			_event = edfdata(f)
+			push!(events, Event(_event))
+		end
+	end
+	Dict([("events", events), ("samples", samples)])
+end
+
+function load(f::AbstractString,check=1, load_events=true,load_samples=true)
+	_path,_ext = splitdir(f)
+	samplefile = joinpath(_path, "eyesamples.jd")
+	if isfile(samplefile)
+		ss = JLD.load(samplefile, "ss")
+		edffile = edfopen(f, check, true, false)
+		data = edfload(edffile)
+		eyedata = EyelinkData(data["events"],ss)
+	else
+		edffile = edfopen(f, check, true, true)
+		data = edfload(edffile)
+		ss = Samples(data["samples"])
+		JLD.save(FileIO.File(format"JLD", samplefile), Dict([("ss", ss)]))
+		eyedata = EyelinkData(data["events"], ss)
+	end
+	eyedata
+end
+
+function save(f::FileIO.File{FileIO.DataFormat{:JLD}},events::Array{Event,1}, samples::Array{FSAMPLE,1}) 
+	ss = Samples(samples)
+	JLD.save(f, EyelinkData(events,ss))
 end
 
 function edfnextdata!(f::EDFFile) 
@@ -61,7 +109,7 @@ function edfdata(f::EDFFile)
 end
 
 function getmessages(f::EDFFile)
-	messages = Array(String,0)
+	messages = Array(AbstractString,0)
         timestamps = Array(Int64,0)
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
@@ -72,6 +120,28 @@ function getmessages(f::EDFFile)
 		end
 	end
 	messages,timestamps
+end
+
+function getsaccades(f::EDFFile)
+	saccades = Array(Saccade, 0)
+	while f.nextevent != :nopending
+		nextevent = edfnextdata!(f)
+		_event= edfdata(f)
+		if nextevent == :endsacc
+			push!(saccades, Saccade(float(_event.sttime), float(_event.entime), _event.gstx, _event.gsty, _event.genx, _event.geny,0))
+		end
+	end
+	saccades
+end
+
+function getsaccades(events::Array{Event,1})
+	saccades = Array(Saccade, 0)
+	for ee in events
+		if ee.eventtype == :endsacc
+			push!(saccades, Saccade(float(_event.sttime), float(_event.entime), _event.gstx, _event.gsty, _event.genx, _event.geny,0))
+		end
+	end
+	saccades
 end
 
 function getgazepos(f::EDFFile)
@@ -94,7 +164,7 @@ end
 
 function getmessage(event::FEVENT)
 	if get(datatypes,event.eventtype,:unknown) == :messageevent
-		return bytestring(convert(Ptr{Uint8}, event.message + sizeof(Uint16)), unsafe_load(convert(Ptr{Uint16}, event.message))), event.sttime
+		return bytestring(convert(Ptr{UInt8}, event.message + sizeof(UInt16)), unsafe_load(convert(Ptr{UInt16}, event.message))), event.sttime
 	end
 end
 
@@ -116,12 +186,12 @@ function getfixations(f::EDFFile;verbose::Integer=0)
 	events
 end
 
-@doc meta("Return the screen size as (width, height) in pixels", return_type=(Int64, Int64))->
+Docile.@doc meta("Return the screen size as (width, height) in pixels", return_type=(Int64, Int64))->
 function getscreensize(f::EDFFile;verbose::Integer=0)
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
 		if nextevent == :messageevent
-			msg = getmessage(edfdata(f))
+			msg,t = getmessage(edfdata(f))
 			if contains(msg, "DISPLAY_COORDS")
 				pp = split(strip(msg,'\0'))
 				return int(pp[end-1])+1,int(pp[end])+1
@@ -130,7 +200,7 @@ function getscreensize(f::EDFFile;verbose::Integer=0)
 	end
 end
 
-function parsetrials(fname::String,args...)
+function parsetrials(fname::ASCIIString,args...)
     f = edfopen(fname, 1, true, true)
     parsetrials(f,args...)
 end
@@ -140,27 +210,29 @@ function parsetrials(f::EDFFile)
 	parsetrials(f, trialstart)
 end
 
-function parsetrials(f::EDFFile,trialmarker::String)
+function parsetrials(f::EDFFile,trialmarker::AbstractString)
 	trialidx = 0
 	trialevent = :none
 	firstsaccade = false
 	saccades = Array(AlignedSaccade,0)
 	trialindex = Array(Int64,0)
 	correct = Array(Bool,0)
-        distractor_row = Array(Int64,0)
-        distractor_col = Array(Int64,0)
-        target_row = Array(Int64,0)
-        target_col = Array(Int64,0)
+    distractor_row = Array(Int64,0)
+    distractor_col = Array(Int64,0)
+    target_row = Array(Int64,0)
+    target_col = Array(Int64,0)
+    messages = Array(ASCIIString,0)
 	trialstart = 0
-        d_row = 0
-        d_col = 0
-        t_row = 0
-        t_col = 0
+    d_row = 0
+    d_col = 0
+    t_row = 0
+    t_col = 0
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
 		_event= edfdata(f)
 		if nextevent == :messageevent
 			message,tt = getmessage(_event)
+            push!(messages,message)
 			#check what the message is
 			m = message[1:3:end]
 			if m == trialmarker #trial start
@@ -189,54 +261,47 @@ function parsetrials(f::EDFFile,trialmarker::String)
                                 t_col = 0
                         elseif m[1] == '1' && m[2] == '0'
                             if length(m) == 8
-                                d_row = parseint(m[8:-1:6],2)
-                                d_col = parseint(m[5:-1:3],2)
+                                d_row = parse(Int,m[8:-1:6],2)
+                                d_col = parse(Int,m[5:-1:3],2)
                             elseif length(m) == 14
-                                d_row = parseint(m[end:-1:9],2)
-                                d_col = parseint(m[8:-1:3],2)
+                                d_row = parse(Int,m[end:-1:9],2)
+                                d_col = parse(Int,m[8:-1:3],2)
                             end
                             distractor_row[trialidx] = d_row
                             distractor_col[trialidx] = d_col
                         elseif m[1] == '0' && m[2] == '1'
                             if length(m) == 8
-                                t_row = parseint(m[8:-1:6],2)
-                                t_col = parseint(m[5:-1:3],2)
+                                t_row = parse(Int,m[8:-1:6],2)
+                                t_col = parse(Int,m[5:-1:3],2)
                             elseif length(m) == 14
-                                t_row = parseint(m[end:-1:9],2)
-                                t_col = parseint(m[8:-1:3],2)
+                                t_row = parse(Int,m[end:-1:9],2)
+                                t_col = parse(Int,m[8:-1:3],2)
                             end
                             target_row[trialidx] = t_row
                             target_col[trialidx] = t_col
 			end
 		elseif nextevent == :endsacc && trialevent != :none
-
-			#if !firstsaccade
-			#	firstsaccade = true
-			push!(saccades, AlignedSaccade(float(_event.sttime-trialstart), _event.gstx, _event.gsty, _event.genx, _event.geny,trialidx,:trialstart))
-		     push!(trialindex,trialidx)
-			# end
+            if _event.sttime > trialstart
+                push!(saccades, AlignedSaccade(float(_event.sttime)-float(trialstart), float(_event.entime) -float(trialstart),_event.gstx, _event.gsty, _event.genx, _event.geny,trialidx,:start))
+                 push!(trialindex,trialidx)
+			end
 
 		end
 	end
-	return saccades,trialindex, correct, target_row, target_col, distractor_row, distractor_col
+    return EyelinkTrialData(saccades,trialindex, correct,target_row, target_col, distractor_row, distractor_col,messages)
 end
 
-function parsetrials{T<:String}(fnames::Array{T,1},args...)
-    saccades, trialindex, correct, target_row, target_col,distractor_row, distractor_col = parsetrials(fnames[1],args...)
+function parsetrials(fnames::Array{ASCIIString,1},args...)
+    eyelinkdata = parsetrials(fnames[1],args...)
     for f in fnames[2:end]
-        _saccades, _trialindex, _correct, _target_row, _target_col, _distractor_row, _distractor_col = parsetrials(f,args...)
-        append!(saccades, _saccades)
-        append!(trialindex, _trialindex + trialindex[end])
-        append!(correct, _correct)
-        append!(target_row, _target_row)
-        append!(target_col, _target_col)
-        append!(distractor_row, _distractor_row)
-        append!(distractor_col, _distractor_col)
+        _eyelinkdata = parsetrials(f,args...)
+        append!(eyelinkdata, _eyelinkdata)
     end
-    saccades, trialindex, correct, target_row, target_col, distractor_row, distractor_col
+    eyelinkdata
 end
 
-@doc meta("Return the x and y coordinates of the saccade end points. Note that y = 0 corresponds to the top of the screen")->
+
+Docile.@doc meta("Return the x and y coordinates of the saccade end points. Note that y = 0 corresponds to the top of the screen")->
 function get_saccade_position{T<:AbstractSaccade}(saccades::Array{T,1})
 	n = length(saccades)
 	x = Array(Float64,n)
