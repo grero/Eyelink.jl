@@ -20,14 +20,14 @@ datatypes = Dict{Int16, Symbol}(0 => :nopending,
 
 
 type EDFFile
-	fname::AbstractString
+	fname::String
 	ptr::Ptr{Void}
 	nevents::Int64
 	nsamples::Int64
 	nextevent::Symbol
 end
 
-function EDFFile(fname::AbstractString, ptr::Ptr)
+function EDFFile(fname::String, ptr::Ptr)
 	EDFFile(fname,ptr,0,0,:unknown)
 end
 
@@ -105,7 +105,7 @@ type EyelinkTrialData
     target_col::Array{Int64,1}
     distractor_row::Array{Int64,1}
     distractor_col::Array{Int64,1}
-    messages::Array{ASCIIString,1}
+    messages::Array{String,1}
 		timestamps::Array{Int64,1}
 end
 
@@ -154,7 +154,7 @@ type Event
 	supdy::Float32
 	eupdy::Float32
 	eye::Int16
-	message::ASCIIString
+	message::String
 	eventtype::Symbol
 end
 
@@ -365,7 +365,7 @@ function convert{T<:AbstractSaccade}(::Type{Dict}, saccades::Array{T,1})
     _end_y = Array(Float64,n)
     _trialindex = Array(Int64,n)
     if T <: AlignedSaccade
-        _alignment = Array(ASCIIString,n)
+        _alignment = Array(String,n)
     end
     for (i,s) in enumerate(saccades)
         _start_time[i] = s.start_time

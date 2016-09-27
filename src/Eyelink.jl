@@ -18,7 +18,7 @@ function version()
 	return bytestring(_version)
 end
 
-function edfopen(fname::ASCIIString,consistency_check::Int64, load_events::Bool, load_samples::Bool)
+function edfopen(fname::String,consistency_check::Int64, load_events::Bool, load_samples::Bool)
 	err = 0
 	if !isfile(fname)
 		error("Could not open file $fname")
@@ -64,7 +64,7 @@ function edfload(edffile::EDFFile)
 	Dict([("events", events), ("samples", samples)])
 end
 
-function load(f::AbstractString,check=1, load_events=true,load_samples=true)
+function load(f::String,check=1, load_events=true,load_samples=true)
 	_path,_ext = splitdir(f)
 	samplefile = joinpath(_path, "eyesamples.jd")
 	if isfile(samplefile)
@@ -109,7 +109,7 @@ function edfdata(f::EDFFile)
 end
 
 function getmessages(f::EDFFile)
-	messages = Array(AbstractString,0)
+	messages = Array(String,0)
         timestamps = Array(Int64,0)
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
@@ -200,7 +200,7 @@ function getscreensize(f::EDFFile;verbose::Integer=0)
 	end
 end
 
-function parsetrials(fname::ASCIIString,args...)
+function parsetrials(fname::String,args...)
     f = edfopen(fname, 1, true, true)
     parsetrials(f,args...)
 end
@@ -210,7 +210,7 @@ function parsetrials(f::EDFFile)
 	parsetrials(f, trialstart)
 end
 
-function parsetrials(f::EDFFile,trialmarker::AbstractString)
+function parsetrials(f::EDFFile,trialmarker::String)
 	trialidx = 0
 	trialevent = :none
 	firstsaccade = false
@@ -221,7 +221,7 @@ function parsetrials(f::EDFFile,trialmarker::AbstractString)
     distractor_col = Array(Int64,0)
     target_row = Array(Int64,0)
     target_col = Array(Int64,0)
-    messages = Array(ASCIIString,0)
+    messages = Array(String,0)
 	trialstart = 0
     d_row = 0
     d_col = 0
@@ -291,7 +291,7 @@ function parsetrials(f::EDFFile,trialmarker::AbstractString)
     return EyelinkTrialData(saccades,trialindex, correct,target_row, target_col, distractor_row, distractor_col,messages)
 end
 
-function parsetrials(fnames::Array{ASCIIString,1},args...)
+function parsetrials(fnames::Array{String,1},args...)
     eyelinkdata = parsetrials(fnames[1],args...)
     for f in fnames[2:end]
         _eyelinkdata = parsetrials(f,args...)
