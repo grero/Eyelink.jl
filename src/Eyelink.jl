@@ -64,9 +64,13 @@ function edfload(edffile::EDFFile)
 	Dict([("events", events), ("samples", samples)])
 end
 
+"""
+Load eyelink events and, optionally, samples from the EDF file `f`. First checks whether parsed versions of samples and events exist, and loads those, before attempting to lead the entire EDF file.
+
+	function load(f::String,check=1, load_events=true,load_samples=true)
+"""
 function load(f::String,check=1, load_events=true,load_samples=true)
-	_path,_ext = splitdir(f)
-	samplefile = joinpath(_path, "eyesamples.jd")
+	samplefile = replace(f, ".edf", "_eyesamples.jd")
 	if isfile(samplefile)
 		ss = JLD.load(samplefile, "ss")
 		edffile = edfopen(f, check, true, false)
@@ -194,7 +198,7 @@ function getscreensize(f::EDFFile;verbose::Integer=0)
 			msg,t = getmessage(edfdata(f))
 			if contains(msg, "DISPLAY_COORDS")
 				pp = split(strip(msg,'\0'))
-				return int(pp[end-1])+1,int(pp[end])+1
+				return parse(Int64,pp[end-1])+1,parse(Int64,pp[end])+1
 			end
 		end
 	end
