@@ -28,9 +28,9 @@ function edfopen(fname::String,consistency_check::Int64, load_events::Bool, load
 		error("Could not open file $fname")
 		return nothing
 	end
-	edffile = EDFFile(fname,f) 
+	edffile = EDFFile(fname,f)
 	finalizer(edffile, edfclose)
-	return edffile 
+	return edffile
 end
 
 function edfclose(f::EDFFile)
@@ -42,7 +42,7 @@ end
 
 function edfload(edffile::EDFFile)
 	f = edffile
-	#samples = Samples(0) 
+	#samples = Samples(0)
 	samples = Array(FSAMPLE,0)
 	events = Array(Event,0)
 	while f.nextevent != :nopending
@@ -85,12 +85,12 @@ function load(f::String,check=1, load_events=true,load_samples=true)
 	eyedata
 end
 
-function save(f::FileIO.File{FileIO.DataFormat{:JLD}},events::Array{Event,1}, samples::Array{FSAMPLE,1}) 
+function save(f::FileIO.File{FileIO.DataFormat{:JLD}},events::Array{Event,1}, samples::Array{FSAMPLE,1})
 	ss = Samples(samples)
 	JLD.save(f, EyelinkData(events,ss))
 end
 
-function edfnextdata!(f::EDFFile) 
+function edfnextdata!(f::EDFFile)
 	eventtype = ccall((:edf_get_next_data, _library), Int64, (Ptr{Void},), f.ptr)
 	f.nextevent =  get(datatypes,eventtype,:unknown)
 	return f.nextevent
