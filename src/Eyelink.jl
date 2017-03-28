@@ -12,7 +12,6 @@ end
 
 const _library = "/Library/Frameworks/edfapi.framework/Versions/Current/edfapi"
 
-
 function version()
 	_version = ccall((:edf_get_version, _library), Ptr{UInt8}, ())
 	return bytestring(_version)
@@ -190,7 +189,9 @@ function getfixations(f::EDFFile;verbose::Integer=0)
 	events
 end
 
-Docile.@doc meta("Return the screen size as (width, height) in pixels", return_type=(Int64, Int64))->
+"""
+Return the screen size as (width, height) in pixels
+"""
 function getscreensize(f::EDFFile;verbose::Integer=0)
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
@@ -221,22 +222,22 @@ function parsetrials(f::EDFFile,trialmarker::String)
 	saccades = Array(AlignedSaccade,0)
 	trialindex = Array(Int64,0)
 	correct = Array(Bool,0)
-    distractor_row = Array(Int64,0)
-    distractor_col = Array(Int64,0)
-    target_row = Array(Int64,0)
-    target_col = Array(Int64,0)
-    messages = Array(String,0)
+  distractor_row = Array(Int64,0)
+  distractor_col = Array(Int64,0)
+  target_row = Array(Int64,0)
+  target_col = Array(Int64,0)
+  messages = Array(String,0)
 	trialstart = 0
-    d_row = 0
-    d_col = 0
-    t_row = 0
-    t_col = 0
+  d_row = 0
+  d_col = 0
+  t_row = 0
+  t_col = 0
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
 		_event= edfdata(f)
 		if nextevent == :messageevent
 			message,tt = getmessage(_event)
-            push!(messages,message)
+      push!(messages,message)
 			#check what the message is
 			m = message[1:3:end]
 			if m == trialmarker #trial start
@@ -244,52 +245,51 @@ function parsetrials(f::EDFFile,trialmarker::String)
 				trialidx +=1
 				firstsaccade = false
 				trialstart = _event.sttime
-                                push!(correct, false)
-                                push!(distractor_row,0)
-                                push!(distractor_col,0)
-                                push!(target_row,0)
-                                push!(target_col,0)
+				push!(correct, false)
+				push!(distractor_row,0)
+				push!(distractor_col,0)
+				push!(target_row,0)
+				push!(target_col,0)
 			elseif m == "00000101" #response
-                            trialevent = :response
-                        elseif m == "00000110" #reward
-                            correct[trialidx] = true
+        trialevent = :response
+	    elseif m == "00000110" #reward
+        correct[trialidx] = true
 			elseif m == "00100000" #trial end
 				trialevent = :none
 				#if we are at the end and have seen no saccade, insert an empty one
 				#if !firstsaccade
 				#	push!(saccades, zero(Saccade))
 				#end
-                                d_row = 0
-                                d_col = 0
-                                t_row = 0
-                                t_col = 0
-                        elseif m[1] == '1' && m[2] == '0'
-                            if length(m) == 8
-                                d_row = parse(Int,m[8:-1:6],2)
-                                d_col = parse(Int,m[5:-1:3],2)
-                            elseif length(m) == 14
-                                d_row = parse(Int,m[end:-1:9],2)
-                                d_col = parse(Int,m[8:-1:3],2)
-                            end
-                            distractor_row[trialidx] = d_row
-                            distractor_col[trialidx] = d_col
-                        elseif m[1] == '0' && m[2] == '1'
-                            if length(m) == 8
-                                t_row = parse(Int,m[8:-1:6],2)
-                                t_col = parse(Int,m[5:-1:3],2)
-                            elseif length(m) == 14
-                                t_row = parse(Int,m[end:-1:9],2)
-                                t_col = parse(Int,m[8:-1:3],2)
-                            end
-                            target_row[trialidx] = t_row
-                            target_col[trialidx] = t_col
+				d_row = 0
+				d_col = 0
+				t_row = 0
+				t_col = 0
+			elseif m[1] == '1' && m[2] == '0'
+				if length(m) == 8
+					d_row = parse(Int,m[8:-1:6],2)
+					d_col = parse(Int,m[5:-1:3],2)
+				elseif length(m) == 14
+					d_row = parse(Int,m[end:-1:9],2)
+					d_col = parse(Int,m[8:-1:3],2)
+				end
+				distractor_row[trialidx] = d_row
+				distractor_col[trialidx] = d_col
+			elseif m[1] == '0' && m[2] == '1'
+				if length(m) == 8
+					t_row = parse(Int,m[8:-1:6],2)
+					t_col = parse(Int,m[5:-1:3],2)
+				elseif length(m) == 14
+					t_row = parse(Int,m[end:-1:9],2)
+					t_col = parse(Int,m[8:-1:3],2)
+				end
+				target_row[trialidx] = t_row
+	      target_col[trialidx] = t_col
 			end
 		elseif nextevent == :endsacc && trialevent != :none
-            if _event.sttime > trialstart
-                push!(saccades, AlignedSaccade(float(_event.sttime)-float(trialstart), float(_event.entime) -float(trialstart),_event.gstx, _event.gsty, _event.genx, _event.geny,trialidx,:start))
-                 push!(trialindex,trialidx)
+      if _event.sttime > trialstart
+        push!(saccades, AlignedSaccade(float(_event.sttime)-float(trialstart), float(_event.entime) -float(trialstart),_event.gstx, _event.gsty, _event.genx, _event.geny,trialidx,:start))
+       	push!(trialindex,trialidx)
 			end
-
 		end
 	end
     return EyelinkTrialData(saccades,trialindex, correct,target_row, target_col, distractor_row, distractor_col,messages)
@@ -298,21 +298,23 @@ end
 function parsetrials(fnames::Array{String,1},args...)
     eyelinkdata = parsetrials(fnames[1],args...)
     for f in fnames[2:end]
-        _eyelinkdata = parsetrials(f,args...)
-        append!(eyelinkdata, _eyelinkdata)
+      _eyelinkdata = parsetrials(f,args...)
+      append!(eyelinkdata, _eyelinkdata)
     end
     eyelinkdata
 end
 
 
-Docile.@doc meta("Return the x and y coordinates of the saccade end points. Note that y = 0 corresponds to the top of the screen")->
+"""
+Return the x and y coordinates of the saccade end points. Note that y = 0 corresponds to the top of the screen
+"""
 function get_saccade_position{T<:AbstractSaccade}(saccades::Array{T,1})
 	n = length(saccades)
 	x = Array(Float64,n)
 	y = Array(Float64,n)
-	for (i,saccade) in enumerate(saccades) 
-		x[i] = saccade.end_x 
-		y[i] = saccade.end_y 
+	for (i,saccade) in enumerate(saccades)
+		x[i] = saccade.end_x
+		y[i] = saccade.end_y
 	end
 	x,y
 end
