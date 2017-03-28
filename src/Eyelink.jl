@@ -1,9 +1,7 @@
 module Eyelink
 import GUICheck
-using Docile
 using Compat
 using FileIO,JLD
-@docstrings
 include("types.jl")
 
 if GUICheck.hasgui()
