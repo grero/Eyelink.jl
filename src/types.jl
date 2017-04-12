@@ -434,3 +434,5 @@ type EyelinkData
 	samples::Samples
 end
 
+get_gaze(eyelinkdata::EyelinkData) = (eyelinkdata.samples.gx, eyelinkdata.samples.gy)
+get_pupil(eyelinkdata::EyelinkData) = eyelinkdata.samples.pa
