@@ -1,5 +1,4 @@
-import Winston
-import Winston.plot
+using Plots
 
 type Grid
 	screen_width::Float64
