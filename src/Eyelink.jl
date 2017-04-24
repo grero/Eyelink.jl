@@ -65,16 +65,20 @@ Load eyelink events and, optionally, samples from the EDF file `f`. First checks
 """
 function load(f::String,check=1, load_events=true,load_samples=true)
 	samplefile = replace(f, ".edf", "_eyesamples.jd")
-	if isfile(samplefile)
+	if isfile(samplefile) && load_samples
 		ss = JLD.load(samplefile, "ss")
 		edffile = edfopen(f, check, true, false)
 		data = edfload(edffile)
 		eyedata = EyelinkData(data["events"],ss)
 	else
-		edffile = edfopen(f, check, true, true)
+		edffile = edfopen(f, check, load_events, load_samples)
 		data = edfload(edffile)
-		ss = Samples(data["samples"])
-		JLD.save(FileIO.File(format"JLD", samplefile), Dict([("ss", ss)]))
+		if load_samples
+			ss = Samples(data["samples"])
+			JLD.save(FileIO.File(format"JLD", samplefile), Dict([("ss", ss)]))
+		else
+			ss = Samples(0)
+		end
 		eyedata = EyelinkData(data["events"], ss)
 	end
 	eyedata
