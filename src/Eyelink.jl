@@ -5,10 +5,6 @@ using Compat
 using FileIO,JLD
 include("types.jl")
 
-if GUICheck.hasgui()
-	include("plot.jl")
-end
-
 const _library = "/Library/Frameworks/edfapi.framework/Versions/Current/edfapi"
 
 function version()
