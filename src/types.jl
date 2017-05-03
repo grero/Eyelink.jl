@@ -250,6 +250,16 @@ type FSAMPLE
         errors::UInt16
 end
 
+#TODO: Just learn macros already...
+function FSAMPLE()
+  args = []
+  for f in fieldnames(FSAMPLE)
+    q = fieldtype(FSAMPLE, f)
+    push!(args, "zero($(q))")
+  end
+  eval(parse("Eyelink.FSAMPLE($(join(args,",")))"))
+end
+
 type Samples
 	time::Array{UInt32,1}
 	px::Array{Float64,2}
