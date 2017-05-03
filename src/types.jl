@@ -3,6 +3,7 @@ import Base.zero, Base.isempty, Base.+, Base.convert, Base.append!, Base.push!
 import FileIO
 import MAT
 import FileIO.save
+using StaticArrays
 
 datatypes = Dict{Int16, Symbol}(0 => :nopending,
 			24 => :messageevent,
@@ -218,54 +219,30 @@ function Event(fevent::FEVENT)
 	Event(args...)
 end
 
-
-immutable float_vec2
-    x1::Float32
-    x2::Float32
-end
-
-immutable int_vec2
-    x1::Int16
-    x2::Int16
-end
-
-immutable int_vec8
-    x1::Int16
-    x2::Int16
-    x3::Int16
-    x4::Int16
-    x5::Int16
-    x6::Int16
-    x7::Int16
-    x8::Int16
-end
-
-
 type FSAMPLE
         time::UInt32
-        #px::Array{Float32,1}
-        px::float_vec2
-        py::float_vec2
-        hx::float_vec2
-        hy::float_vec2
-        pa::float_vec2
-        gx::float_vec2
-        gy::float_vec2
+        px::SVector{2,Float32}
+        py::SVector{2,Float32}
+        hx::SVector{2,Float32}
+        hy::SVector{2,Float32}
+        pa::SVector{2,Float32}
+        gx::SVector{2,Float32}
+        gy::SVector{2,Float32}
         rx::Float32
         ry::Float32
-        gxvel::float_vec2
-        gyvel::float_vec2
-        hxvel::float_vec2
-        hyvel::float_vec2
-        rxvel::float_vec2
-        ryvel::float_vec2
-        fgxvel::float_vec2
-        fgyvel::float_vec2
-        fhxvel::float_vec2
-        fhyvel::float_vec2
-        frxvel::float_vec2
-        fryvel::float_vec2
-        hdata::int_vec8
+        gxvel::SVector{2,Float32}
+        gyvel::SVector{2,Float32}
+        hxvel::SVector{2,Float32}
+        hyvel::SVector{2,Float32}
+        rxvel::SVector{2,Float32}
+        ryvel::SVector{2,Float32}
+        fgxvel::SVector{2,Float32}
+        fgyvel::SVector{2,Float32}
+        fhxvel::SVector{2,Float32}
+        fhyvel::SVector{2,Float32}
+        frxvel::SVector{2,Float32}
+        fryvel::SVector{2,Float32}
+        hdata::SVector{8,Int16}
         flags::UInt16
         input::UInt16
         buttons::UInt16
@@ -315,7 +292,7 @@ function Samples(fsamples::Array{FSAMPLE,1})
 	_fieldnames = fieldnames(Samples)
 	for i in 1:length(fsamples)
 		for ff in _fieldnames
-			if fieldtype(FSAMPLE, ff) <: float_vec2
+			if fieldtype(FSAMPLE, ff) <: SVector{2,Float32}
 				qq = getfield(fsamples[i],ff)
 				getfield(samples, ff)[1,i] = qq.x1
 				getfield(samples, ff)[2,i] = qq.x2
@@ -330,7 +307,7 @@ end
 function push!(samples::Samples, fsample::FSAMPLE)
 	qq = Array(Float64,2)
 	for ff in fieldnames(samples)
-		if fieldtype(FSAMPLE, ff) <: float_vec2
+		if fieldtype(FSAMPLE, ff) <: SVector{2,Float32}
 			qq = getfield(fsample,ff)
 			push!(getfield(samples,ff), [qq.x1, qq.x2])
 		else
