@@ -304,8 +304,7 @@ function Samples(fsamples::Array{FSAMPLE,1})
 		for ff in _fieldnames
 			if fieldtype(FSAMPLE, ff) <: SVector{2,Float32}
 				qq = getfield(fsamples[i],ff)
-				getfield(samples, ff)[1,i] = qq.x1
-				getfield(samples, ff)[2,i] = qq.x2
+				getfield(samples, ff)[:,i] = qq
 			else
 				getfield(samples,ff)[i] = getfield(fsamples[i],ff)
 			end
@@ -319,7 +318,7 @@ function push!(samples::Samples, fsample::FSAMPLE)
 	for ff in fieldnames(samples)
 		if fieldtype(FSAMPLE, ff) <: SVector{2,Float32}
 			qq = getfield(fsample,ff)
-			push!(getfield(samples,ff), [qq.x1, qq.x2])
+			push!(getfield(samples,ff), qq)
 		else
 			push!(getfield(samples,ff), getfield(fsample,ff))
 		end
