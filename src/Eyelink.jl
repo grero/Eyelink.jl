@@ -138,8 +138,8 @@ end
 
 function getsaccades(events::Array{Event,1})
 	saccades = Array(Saccade, 0)
-	for ee in events
-		if ee.eventtype == :endsacc
+	for _event in events
+		if _event.eventtype == :endsacc
 			push!(saccades, Saccade(float(_event.sttime), float(_event.entime), _event.gstx, _event.gsty, _event.genx, _event.geny,0))
 		end
 	end
