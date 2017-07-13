@@ -1,6 +1,5 @@
 __precompile__()
 module Eyelink
-import GUICheck
 using Compat
 using FileIO,JLD
 include("types.jl")
