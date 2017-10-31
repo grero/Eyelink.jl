@@ -20,7 +20,7 @@ datatypes = Dict{Int16, Symbol}(0 => :nopending,
              200 => :sample_type)
 
 
-type EDFFile
+struct EDFFile
 	fname::String
 	ptr::Ptr{Void}
 	nevents::Int64
@@ -32,15 +32,15 @@ function EDFFile(fname::String, ptr::Ptr)
 	EDFFile(fname,ptr,0,0,:unknown)
 end
 
-type EyeEvent
+struct EyeEvent
 	time::Int64
 	x::Float32
 	y::Float32
 end
 
-abstract AbstractSaccade
+abstract type AbstractSaccade end
 
-type Saccade <: AbstractSaccade
+struct Saccade <: AbstractSaccade
 	start_time::Float64
 	end_time::Float64
 	start_x::Float32
@@ -52,7 +52,7 @@ end
 
 Saccade(time::Float64, start_x, start_y, end_x, end_y, trialindex) = Saccade(time, 0.0, start_x, start_y, end_x, end_y, trialindex)
 
-type AlignedSaccade <: AbstractSaccade
+struct AlignedSaccade <: AbstractSaccade
 	start_time::Float64
 	end_time::Float64
 	start_x::Float32
@@ -98,7 +98,7 @@ end
 
 isempty{T<:AbstractSaccade}(S::T) = S.start_x == S.end_x & S.start_y == S.end_y
 
-type EyelinkTrialData
+struct EyelinkTrialData
     saccades::Array{AlignedSaccade,1}
     trialindex::Array{Int64,1}
     correct::Array{Bool,1}
@@ -127,7 +127,7 @@ function append!(data1::EyelinkTrialData, data2::EyelinkTrialData)
     append!(data1.messages, data2.messages)
 end
 
-type Event
+struct Event
 	time::UInt32
 	sttime::UInt32
 	entime::UInt32
@@ -159,12 +159,12 @@ type Event
 	eventtype::Symbol
 end
 
-type LSTRING
+struct LSTRING
 	len::Int16
 	c::UInt8
 end
 
-type FEVENT
+struct FEVENT
 	time::UInt32
 	eventtype::Int16
 	read::UInt16
@@ -219,7 +219,7 @@ function Event(fevent::FEVENT)
 	Event(args...)
 end
 
-type FSAMPLE
+struct FSAMPLE
         time::UInt32
         px::SVector{2,Float32}
         py::SVector{2,Float32}
@@ -260,7 +260,7 @@ function FSAMPLE()
   eval(parse("Eyelink.FSAMPLE($(join(args,",")))"))
 end
 
-type Samples
+struct Samples
 	time::Array{UInt32,1}
 	px::Array{Float64,2}
 	py::Array{Float64,2}
@@ -314,7 +314,7 @@ function Samples(fsamples::Array{FSAMPLE,1})
 end
 
 function push!(samples::Samples, fsample::FSAMPLE)
-	qq = Array(Float64,2)
+    qq = Array{Float64}(2)
 	for ff in fieldnames(samples)
 		if fieldtype(FSAMPLE, ff) <: SVector{2,Float32}
 			qq = getfield(fsample,ff)
@@ -343,15 +343,15 @@ end
 
 function convert{T<:AbstractSaccade}(::Type{Dict}, saccades::Array{T,1})
     n = length(saccades)
-    _start_time = Array(Float64,n)
-    _end_time = Array(Float64,n)
-    _start_x = Array(Float64,n)
-    _start_y = Array(Float64,n)
-    _end_x = Array(Float64,n)
-    _end_y = Array(Float64,n)
-    _trialindex = Array(Int64,n)
+    _start_time = Array{Float64}(n)
+    _end_time = Array{Float64}(n)
+    _start_x = Array{Float64}(n)
+    _start_y = Array{Float64}(n)
+    _end_x = Array{Float64}(n)
+    _end_y = Array{Float64}(n)
+    _trialindex = Array{Int64}(n)
     if T <: AlignedSaccade
-        _alignment = Array(String,n)
+        _alignment = Array{String}(n)
     end
     for (i,s) in enumerate(saccades)
         _start_time[i] = s.start_time
@@ -388,9 +388,9 @@ function convert{T<:AbstractSaccade}(::Type{Array{T,1}}, M::Dict)
 			throw(ArgumentError("No valid objects of type $T found"))
 		end
     if "alignment" in keys(M)
-        saccades = Array(AlignedSaccade,n)
+        saccades = Array{AlignedSaccade}(n)
     else
-        saccades = Array(Saccade,n)
+        saccades = Array{Saccade}(n)
     end
     for i in 1:n
 				if "start_time" in keys(M)
@@ -415,7 +415,7 @@ function convert{T<:AbstractSaccade}(::Type{Array{T,1}}, M::Dict)
     saccades
 end
 
-type EyelinkData
+struct EyelinkData
 	events::Array{Event,1}
 	samples::Samples
 end
