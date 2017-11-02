@@ -39,8 +39,8 @@ end
 function edfload(edffile::EDFFile)
 	f = edffile
 	#samples = Samples(0)
-	samples = Array(FSAMPLE,0)
-	events = Array(Event,0)
+    samples = Array{FSAMPLE}(0)
+    events = Array{Event}(0)
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
 		if nextevent == :sample_type
@@ -112,8 +112,8 @@ function edfdata(f::EDFFile)
 end
 
 function getmessages(f::EDFFile)
-	messages = Array(String,0)
-        timestamps = Array(Int64,0)
+    messages = Array{String}(0)
+    timestamps = Array{Int64}(0)
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
 		if nextevent == :messageevent
@@ -126,7 +126,7 @@ function getmessages(f::EDFFile)
 end
 
 function getsaccades(f::EDFFile)
-	saccades = Array(Saccade, 0)
+    saccades = Array{Saccade}(0)
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
 		_event= edfdata(f)
@@ -138,7 +138,7 @@ function getsaccades(f::EDFFile)
 end
 
 function getsaccades(events::Array{Event,1})
-	saccades = Array(Saccade, 0)
+    saccades = Array{Saccade}(0)
 	for _event in events
 		if _event.eventtype == :endsacc
 			push!(saccades, Saccade(float(_event.sttime), float(_event.entime), _event.gstx, _event.gsty, _event.genx, _event.geny,0))
@@ -148,9 +148,9 @@ function getsaccades(events::Array{Event,1})
 end
 
 function getgazepos(f::EDFFile)
-    gazex = Array(Float32,0)
-    gazey = Array(Float32,0)
-    timestamp = Array(Int64,0)
+    gazex = Array{Float32}(0)
+    gazey = Array{Float32}(0)
+    timestamp = Array{Int64}(0)
     while f.nextevent != :nopending
         nextevent = edfnextdata!(f)
         if nextevent == :sample_type
@@ -178,7 +178,7 @@ function getfixation(event::FEVENT)
 end
 
 function getfixations(f::EDFFile;verbose::Integer=0)
-	events = Array(EyeEvent,0)
+    events = Array{EyeEvent}(0)
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
 		if nextevent == :endfix
@@ -219,19 +219,19 @@ function parsetrials(f::EDFFile,trialmarker::String)
 	trialidx = 0
 	trialevent = :none
 	firstsaccade = false
-	saccades = Array(AlignedSaccade,0)
-	trialindex = Array(Int64,0)
-	correct = Array(Bool,0)
-  distractor_row = Array(Int64,0)
-  distractor_col = Array(Int64,0)
-  target_row = Array(Int64,0)
-  target_col = Array(Int64,0)
-  messages = Array(String,0)
+    saccades = Array{AlignedSaccade}(0)
+    trialindex = Array{Int64}(0)
+    correct = Array{Bool}(0)
+    distractor_row = Array{Int64}(0)
+    distractor_col = Array{Int64}(0)
+    target_row = Array{Int64}(0)
+    target_col = Array{Int64}(0)
+    messages = Array{String}(0)
 	trialstart = 0
-  d_row = 0
-  d_col = 0
-  t_row = 0
-  t_col = 0
+    d_row = 0
+    d_col = 0
+    t_row = 0
+    t_col = 0
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
 		_event= edfdata(f)
@@ -310,8 +310,8 @@ Return the x and y coordinates of the saccade end points. Note that y = 0 corres
 """
 function get_saccade_position{T<:AbstractSaccade}(saccades::Array{T,1})
 	n = length(saccades)
-	x = Array(Float64,n)
-	y = Array(Float64,n)
+    x = Array{Float64}(n)
+    y = Array{Float64}(n)
 	for (i,saccade) in enumerate(saccades)
 		x[i] = saccade.end_x
 		y[i] = saccade.end_y
