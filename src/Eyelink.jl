@@ -30,10 +30,11 @@ function edfopen(fname::String,consistency_check::Int64, load_events::Bool, load
 end
 
 function edfclose(f::EDFFile)
-	err = ccall((:edf_close_file, _library), Int64, (Ptr{Void},),f.ptr)
-	if err != 0
-		error("Could not close file $(EDFFile.fname)")
-	end
+    if f.ptr != C_NULL
+        err = ccall((:edf_close_file, _library), Int64, (Ptr{Void},),f.ptr)
+        f.ptr = C_NULL
+    end
+    println("finalized")
 end
 
 function edfload(edffile::EDFFile)

@@ -20,7 +20,7 @@ datatypes = Dict{Int16, Symbol}(0 => :nopending,
              200 => :sample_type)
 
 
-struct EDFFile
+mutable struct EDFFile
 	fname::String
 	ptr::Ptr{Void}
 	nevents::Int64
