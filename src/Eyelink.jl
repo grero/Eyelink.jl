@@ -2,6 +2,7 @@ __precompile__()
 module Eyelink
 using Compat
 using FileIO,JLD
+using ProgressMeter
 using LegacyStrings
 include("types.jl")
 const bytestring = LegacyStrings.bytestring
@@ -42,6 +43,9 @@ function edfload(edffile::EDFFile)
 	#samples = Samples(0)
     samples = Array{FSAMPLE}(0)
     events = Array{Event}(0)
+    nevents = get_element_count(f)
+    event_count = 0
+    p = Progress(nevents, 0.1)
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
 		if nextevent == :sample_type
@@ -56,10 +60,19 @@ function edfload(edffile::EDFFile)
 			_event = edfdata(f)
 			push!(events, Event(_event))
 		end
+        event_count += 1
+        update!(p, event_count)
 	end
 	Dict([("events", events), ("samples", samples)])
 end
 
+function get_element_count(edffile::EDFFile)
+    nelements = 0
+    if edffile.ptr != C_NULL
+        nelements = ccall((:edf_get_element_count, _library), Int64, (Ptr{Void},), edffile.ptr)
+    end
+    nelements
+end
 """
 Load eyelink events and, optionally, samples from the EDF file `f`. First checks whether parsed versions of samples and events exist, and loads those, before attempting to lead the entire EDF file.
 
