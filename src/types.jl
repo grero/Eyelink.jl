@@ -262,33 +262,33 @@ end
 
 struct Samples
 	time::Array{UInt32,1}
-	px::Array{Float64,2}
-	py::Array{Float64,2}
-	hx::Array{Float64,2}
-	hy::Array{Float64,2}
-	pa::Array{Float64,2}
-	gx::Array{Float64,2}
-	gy::Array{Float64,2}
-	rx::Array{Float64,1}
-	ry::Array{Float64,1}
-	gxvel::Array{Float64,2}
-	gyvel::Array{Float64,2}
-	hxvel::Array{Float64,2}
-	hyvel::Array{Float64,2}
-	rxvel::Array{Float64,2}
-	ryvel::Array{Float64,2}
-	fgxvel::Array{Float64,2}
-	fgyvel::Array{Float64,2}
-	fhxvel::Array{Float64,2}
-	fhyvel::Array{Float64,2}
-	frxvel::Array{Float64,2}
-	fryvel::Array{Float64,2}
+	px::Array{Float32,2}
+	py::Array{Float32,2}
+	hx::Array{Float32,2}
+	hy::Array{Float32,2}
+	pa::Array{Float32,2}
+	gx::Array{Float32,2}
+	gy::Array{Float32,2}
+	rx::Array{Float32,1}
+	ry::Array{Float32,1}
+	gxvel::Array{Float32,2}
+	gyvel::Array{Float32,2}
+	hxvel::Array{Float32,2}
+	hyvel::Array{Float32,2}
+	rxvel::Array{Float32,2}
+	ryvel::Array{Float32,2}
+	fgxvel::Array{Float32,2}
+	fgyvel::Array{Float32,2}
+	fhxvel::Array{Float32,2}
+	fhyvel::Array{Float32,2}
+	frxvel::Array{Float32,2}
+	fryvel::Array{Float32,2}
 end
 
 function Samples(n::Integer)
 	args = Any[]
 	for ff in fieldnames(Samples)
-		if fieldtype(Samples, ff) <: Array{Float64,2}
+		if fieldtype(Samples, ff) <: Array{Float32,2}
 			push!(args, zeros(2,n))
 		else
 			push!(args, fieldtype(Samples, ff)(n))
@@ -314,7 +314,7 @@ function Samples(fsamples::Array{FSAMPLE,1})
 end
 
 function push!(samples::Samples, fsample::FSAMPLE)
-    qq = Array{Float64}(2)
+    qq = Array{Float32}(2)
 	for ff in fieldnames(samples)
 		if fieldtype(FSAMPLE, ff) <: SVector{2,Float32}
 			qq = getfield(fsample,ff)
