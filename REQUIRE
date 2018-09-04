@@ -4,3 +4,4 @@ ProgressMeter
 Compat
 HDF5
 LegacyStrings
+StaticArrays
