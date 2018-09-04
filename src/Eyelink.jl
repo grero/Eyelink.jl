@@ -1,7 +1,8 @@
 __precompile__()
 module Eyelink
 using Compat
-using FileIO,JLD
+using FileIO
+using HDF5
 using ProgressMeter
 using LegacyStrings
 include("types.jl")
@@ -78,10 +79,10 @@ Load eyelink events and, optionally, samples from the EDF file `f`. First checks
 
 	function load(f::String,check=1, load_events=true,load_samples=true)
 """
-function load(f::String,check=1, load_events=true,load_samples=true)
-	samplefile = replace(f, ".edf", "_eyesamples.jd")
+function load(f::String,check=1, load_events=true,load_samples=true;do_save=true)
+	samplefile = replace(f, ".edf", "_eyesamples.hdf5")
 	if isfile(samplefile) && load_samples
-		ss = JLD.load(samplefile, "ss")
+        ss = load(File(format"HDF5", samplefile))
 		edffile = edfopen(f, check, true, false)
 		data = edfload(edffile)
 		eyedata = EyelinkData(data["events"],ss)
@@ -90,7 +91,9 @@ function load(f::String,check=1, load_events=true,load_samples=true)
 		data = edfload(edffile)
 		if load_samples
 			ss = Samples(data["samples"])
-			JLD.save(FileIO.File(format"JLD", samplefile), Dict([("ss", ss)]))
+            if do_save
+                save(FileIO.File(format"HDF5", samplefile), ss)
+            end
 		else
 			ss = Samples(0)
 		end
@@ -99,10 +102,28 @@ function load(f::String,check=1, load_events=true,load_samples=true)
 	eyedata
 end
 
-function save(f::FileIO.File{FileIO.DataFormat{:JLD}},events::Array{Event,1}, samples::Array{FSAMPLE,1})
-	ss = Samples(samples)
-	JLD.save(f, EyelinkData(events,ss))
+function save(f::FileIO.File{FileIO.DataFormat{:HDF5}}, samples::Samples)
+    HDF5.h5open(f.filename,"w") do ff
+        for _f in fieldnames(Samples)
+            ff[string(_f)] = getfield(samples, _f)
+            flush(ff)
+        end
+    end
 end
+
+function load(f::FileIO.File{FileIO.DataFormat{:HDF5}})
+    samples = HDF5.h5open(f.filename, "r") do ff
+        nsamples = size(ff["gx"],2)
+        samples = Samples(nsamples)
+        for _f in fieldnames(samples)
+            X = getfield(samples, _f)
+            Y = read(ff, string(_f))
+            X .= Y
+        end
+        samples
+    end
+    samples
+ end
 
 function edfnextdata!(f::EDFFile)
 	eventtype = ccall((:edf_get_next_data, _library), Int64, (Ptr{Void},), f.ptr)
