@@ -42,16 +42,19 @@ end
 function edfload(edffile::EDFFile)
 	f = edffile
 	#samples = Samples(0)
-    samples = Array{FSAMPLE}(0)
-    events = Array{Event}(0)
     nevents = get_element_count(f)
+    samples = Array{FSAMPLE}(nevents)
+    events = Array{Event}(nevents)
     event_count = 0
+    sample_count = 0
+    total_count = 0
     p = Progress(nevents, 0.1)
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
 		if nextevent == :sample_type
 			_sample = edfdata(f)
-			push!(samples, _sample)
+            sample_count += 1
+            samples[sample_count] = _sample
 
 		elseif nextevent == :recording_info
 			#nothing
@@ -59,12 +62,17 @@ function edfload(edffile::EDFFile)
 			#ntohing
 		else #event
 			_event = edfdata(f)
-			push!(events, Event(_event))
+            event_count += 1
+            if event_count <= nevents
+                events[event_count] = Event(_event)
+            else
+                push!(events, Event(_event))
+            end
 		end
-        event_count += 1
-        update!(p, event_count)
+        total_count += 1
+        update!(p, total_count)
 	end
-	Dict([("events", events), ("samples", samples)])
+    Dict([("events", events[1:event_count]), ("samples", samples[1:sample_count])])
 end
 
 function get_element_count(edffile::EDFFile)
