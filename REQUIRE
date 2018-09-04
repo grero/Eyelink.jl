@@ -3,3 +3,4 @@ MAT
 ProgressMeter
 Compat
 HDF5
+LegacyStrings
