@@ -22,7 +22,7 @@ datatypes = Dict{Int16, Symbol}(0 => :nopending,
 
 mutable struct EDFFile
 	fname::String
-	ptr::Ptr{Void}
+	ptr::Ptr{Nothing}
 	nevents::Int64
 	nsamples::Int64
 	nextevent::Symbol
