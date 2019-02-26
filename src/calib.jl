@@ -1,7 +1,7 @@
 """
 Return the validation points and errors.
 """
-function get_validation(data::Eyelink.EyelinkData)
+function get_validation(data::EyelinkData)
     val_msg = filter(ee->occursin("VALIDATE", ee.message), data.events)
 
     rpos = r"at ([0-9]*),([0-9]*)"
