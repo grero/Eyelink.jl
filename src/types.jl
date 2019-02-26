@@ -1,4 +1,3 @@
-using Compat
 import Base.zero, Base.isempty, Base.+, Base.convert, Base.append!, Base.push!
 import FileIO
 import MAT

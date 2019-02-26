@@ -1,18 +1,18 @@
 __precompile__()
 module Eyelink
-using Compat
 using FileIO
 using HDF5
 using ProgressMeter
 using LegacyStrings
 include("types.jl")
+include("calib.jl")
 const bytestring = LegacyStrings.bytestring
 
 const _library = "/Library/Frameworks/edfapi.framework/Versions/Current/edfapi"
 
 function version()
 	_version = ccall((:edf_get_version, _library), Ptr{UInt8}, ())
-	@compat return bytestring(_version)
+	return bytestring(_version)
 end
 
 function edfopen(fname::String,consistency_check::Int64, load_events::Bool, load_samples::Bool)
