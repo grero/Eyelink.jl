@@ -1,0 +1,13 @@
+name = "Eyelink"
+uuid = "83654edc-39a9-11e9-3850-750e501afe4a"
+authors = ["roger <roger.herikstad@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
+HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
+LegacyStrings = "1b4a561d-cfcb-5daf-8433-43fcf8b4bea3"
+MAT = "23992714-dd62-5051-b70f-ba57cb901cac"
+ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
