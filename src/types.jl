@@ -80,7 +80,7 @@ function AlignedSaccade(s::Saccade, t0::Real, alignment::Symbol)
 	AlignedSaccade(s.start_time -t0, s.end_time-t0, s.start_x, s.start_y, s.end_x, s.end_y, s.trialindex, alignment)
 end
 
-function gettime{T<:AbstractSaccade}(S::Array{T,1})
+function gettime(S::Array{T,1}) where T<:AbstractSaccade
 	time = zeros(length(S))
 	for (i,s) in enumerate(S)
 		time[i] = s.start_time
