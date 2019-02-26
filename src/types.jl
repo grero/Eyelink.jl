@@ -96,7 +96,7 @@ function zero(::Type{AlignedSaccade})
 	return AlignedSaccade(0, 0.0, 0.0, 0.0, 0.0,:unknown)
 end
 
-isempty{T<:AbstractSaccade}(S::T) = S.start_x == S.end_x & S.start_y == S.end_y
+isempty(S::T) where T<:AbstractSaccade = S.start_x == S.end_x & S.start_y == S.end_y
 
 struct EyelinkTrialData
     saccades::Array{AlignedSaccade,1}
@@ -291,7 +291,7 @@ function Samples(n::Integer)
 		if fieldtype(Samples, ff) <: Array{Float32,2}
 			push!(args, zeros(2,n))
 		else
-			push!(args, fieldtype(Samples, ff)(n))
+			push!(args, fieldtype(Samples, ff)(undef, n))
 		end
 	end
 	Samples(args...)
@@ -326,7 +326,7 @@ function push!(samples::Samples, fsample::FSAMPLE)
 end
 
 
-function save{T<:AbstractSaccade}(f::FileIO.File{FileIO.DataFormat{:MAT}},saccades::Array{T,1})
+function save(f::FileIO.File{FileIO.DataFormat{:MAT}},saccades::Array{T,1}) where T<:AbstractSaccade
     D = convert(Dict, saccades)
     MAT.matwrite(f.filename,D)
 end
@@ -341,7 +341,7 @@ function load(f::FileIO.File{FileIO.DataFormat{:MAT}})
     saccades
 end
 
-function convert{T<:AbstractSaccade}(::Type{Dict}, saccades::Array{T,1})
+function convert(::Type{Dict}, saccades::Array{T,1}) where T<:AbstractSaccade
     n = length(saccades)
     _start_time = Array{Float64}(n)
     _end_time = Array{Float64}(n)
@@ -379,7 +379,7 @@ function convert{T<:AbstractSaccade}(::Type{Dict}, saccades::Array{T,1})
     D
 end
 
-function convert{T<:AbstractSaccade}(::Type{Array{T,1}}, M::Dict)
+function convert(::Type{Array{T,1}}, M::Dict) where T<:AbstractSaccade
 		if "time" in keys(M)
 			n = length(M["time"])
 		elseif "start_time" in keys(M)

@@ -21,19 +21,19 @@ function edfopen(fname::String,consistency_check::Int64, load_events::Bool, load
 		error("Could not open file $fname")
 		return nothing
 	end
-	f = ccall((:edf_open_file, _library),Ptr{Void}, (Ptr{UInt8}, Int64, Int64, Int64,Ptr{Int64}),fname,consistency_check,load_events,load_samples,&err)
+    f = ccall((:edf_open_file, _library),Ptr{Nothing}, (Ptr{UInt8}, Int64, Int64, Int64,Ptr{Int64}),fname,consistency_check,load_events,load_samples,Ref(err))
 	if err != 0
 		error("Could not open file $fname")
 		return nothing
 	end
 	edffile = EDFFile(fname,f)
-	finalizer(edffile, edfclose)
+	finalizer(edfclose, edffile)
 	return edffile
 end
 
 function edfclose(f::EDFFile)
     if f.ptr != C_NULL
-        err = ccall((:edf_close_file, _library), Int64, (Ptr{Void},),f.ptr)
+        err = ccall((:edf_close_file, _library), Int64, (Ptr{Nothing},),f.ptr)
         f.ptr = C_NULL
     end
     println("finalized")
@@ -43,8 +43,8 @@ function edfload(edffile::EDFFile)
 	f = edffile
 	#samples = Samples(0)
     nevents = get_element_count(f)
-    samples = Array{FSAMPLE}(nevents)
-    events = Array{Event}(nevents)
+    samples = Array{FSAMPLE}(undef, nevents)
+    events = Array{Event}(undef, nevents)
     event_count = 0
     sample_count = 0
     total_count = 0
@@ -78,7 +78,7 @@ end
 function get_element_count(edffile::EDFFile)
     nelements = 0
     if edffile.ptr != C_NULL
-        nelements = ccall((:edf_get_element_count, _library), Int64, (Ptr{Void},), edffile.ptr)
+        nelements = ccall((:edf_get_element_count, _library), Int64, (Ptr{Nothing},), edffile.ptr)
     end
     nelements
 end
@@ -88,7 +88,7 @@ Load eyelink events and, optionally, samples from the EDF file `f`. First checks
 	function load(f::String,check=1, load_events=true,load_samples=true)
 """
 function load(f::String,check=1, load_events=true,load_samples=true;do_save=true)
-	samplefile = replace(f, ".edf", "_eyesamples.hdf5")
+	samplefile = replace(f, ".edf" => "_eyesamples.hdf5")
 	if isfile(samplefile) && load_samples
         ss = load(File(format"HDF5", samplefile))
 		edffile = edfopen(f, check, true, false)
@@ -123,7 +123,7 @@ function load(f::FileIO.File{FileIO.DataFormat{:HDF5}})
     samples = HDF5.h5open(f.filename, "r") do ff
         nsamples = size(ff["gx"],2)
         samples = Samples(nsamples)
-        for _f in fieldnames(samples)
+        for _f in fieldnames(Samples)
             X = getfield(samples, _f)
             Y = read(ff, string(_f))
             X .= Y
@@ -134,13 +134,13 @@ function load(f::FileIO.File{FileIO.DataFormat{:HDF5}})
  end
 
 function edfnextdata!(f::EDFFile)
-	eventtype = ccall((:edf_get_next_data, _library), Int64, (Ptr{Void},), f.ptr)
+	eventtype = ccall((:edf_get_next_data, _library), Int64, (Ptr{Nothing},), f.ptr)
 	f.nextevent =  get(datatypes,eventtype,:unknown)
 	return f.nextevent
 end
 
 function edfdata(f::EDFFile)
-	_data = ccall((:edf_get_float_data, _library), Ptr{Void}, (Ptr{Void},), f.ptr)
+	_data = ccall((:edf_get_float_data, _library), Ptr{Nothing}, (Ptr{Nothing},), f.ptr)
 	if f.nextevent == :sample_type
 		#TODO: Implement this
 		_sample = unsafe_load(convert(Ptr{FSAMPLE}, _data), 1)
@@ -351,10 +351,10 @@ end
 """
 Return the x and y coordinates of the saccade end points. Note that y = 0 corresponds to the top of the screen
 """
-function get_saccade_position{T<:AbstractSaccade}(saccades::Array{T,1})
+function get_saccade_position(saccades::Array{T,1}) where T <: AbstractSaccade
 	n = length(saccades)
-    x = Vector{Float64}(undef, n)
-    y = Vector{Float64}(under, n)
+  x = Vector{Float64}(undef, n)
+  y = Vector{Float64}(under, n)
 	for (i,saccade) in enumerate(saccades)
 		x[i] = saccade.end_x
 		y[i] = saccade.end_y
