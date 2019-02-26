@@ -353,8 +353,8 @@ Return the x and y coordinates of the saccade end points. Note that y = 0 corres
 """
 function get_saccade_position(saccades::Array{T,1}) where T <: AbstractSaccade
 	n = length(saccades)
-    x = Array{Float64}(undef,n)
-    y = Array{Float64}(undef,n)
+  x = Vector{Float64}(undef, n)
+  y = Vector{Float64}(under, n)
 	for (i,saccade) in enumerate(saccades)
 		x[i] = saccade.end_x
 		y[i] = saccade.end_y
