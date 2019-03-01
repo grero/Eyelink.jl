@@ -1,6 +1,7 @@
 __precompile__()
 module Eyelink
 using FileIO
+using Sys
 using HDF5
 using ProgressMeter
 using LegacyStrings
@@ -8,7 +9,11 @@ include("types.jl")
 include("calib.jl")
 const bytestring = LegacyStrings.bytestring
 
-const _library = "/Library/Frameworks/edfapi.framework/Versions/Current/edfapi"
+if Sys.isapple()
+    const _library = "/Library/Frameworks/edfapi.framework/Versions/Current/edfapi"
+else
+    const _library = "/usr/lib/libedfapi.so"
+end
 
 function version()
 	_version = ccall((:edf_get_version, _library), Ptr{UInt8}, ())
