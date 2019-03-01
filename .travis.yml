@@ -2,7 +2,6 @@
 language: julia
 os:
   - linux
-  - osx
 julia:
   - 0.7
   - 1.0
@@ -23,8 +22,11 @@ matrix:
 #  apt: # apt-get for linux
 #    packages:
 #    - gfortran
-#before_script: # homebrew for mac
-    # -
+before_script: 
+    - wget -O - "http://download.sr-support.com/software/dists/SRResearch/SRResearch_key" | sudo apt-key add -
+    - echo "deb http://download.sr-support.com/software SRResearch main" | sudo tee -a /etc/apt/sources.list
+    - sudo apt-get update -qq
+    - sudo apt-get install eyelink-display-software -y
 ## uncomment the following lines to override the default test script
 #script:
 after_success:

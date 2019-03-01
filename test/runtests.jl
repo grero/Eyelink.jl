@@ -14,16 +14,21 @@ end
 @testset "Load file" begin
     download("http://cortex.nus.edu.sg/testdata/w7_10_2.edf", "w7_10_2.edf")
     eyelinkdata = Eyelink.load("w7_10_2.edf")
-    ll = length(eyelinkdata.events)
-    @show ll
-    @test ll == 32
-    sttime = [ee.sttime for ee in eyelinkdata.events[1:30]]
-    hh = hash(sttime)
-    @test hh == 0x963b31f9fdfdb0fa
     mm = eyelinkdata.events[1].message
     @test mm == "DISPLAY_COORDS 0 0 1920 1200"
-    tt = eyelinkdata.events[30].eventtype
-    @test tt == :inputevent
+    start_fix_events = filter(ee->ee.eventtype==:endfix,eyelinkdata.events)
+    @test length(start_fix_events) == 3
+    @test start_fix_events[1].sttime == 0x001c065e
+    @test start_fix_events[2].sttime == 0x001c06fa
+    @test start_fix_events[3].sttime == 0x001c076e
+
+    end_fix_events = filter(ee->ee.eventtype==:endfix,eyelinkdata.events)
+    @test length(end_fix_events) == 3
+    input_events = filter(ee->ee.eventtype==:inputevent,eyelinkdata.events)
+    @test length(input_events) == 2
+    @test input_events[1].sttime == 0x001c0657
+    @test input_events[2].sttime == 0x001c07f9
+
     gx = eyelinkdata.samples.gx[2,1]
     @test gx ≈ 846.2f0
     gy = eyelinkdata.samples.gy[2,1]
