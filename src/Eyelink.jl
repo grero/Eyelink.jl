@@ -1,7 +1,6 @@
 __precompile__()
 module Eyelink
 using FileIO
-using Sys
 using HDF5
 using ProgressMeter
 using LegacyStrings
