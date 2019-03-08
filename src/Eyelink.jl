@@ -40,7 +40,6 @@ function edfclose(f::EDFFile)
         err = ccall((:edf_close_file, _library), Int64, (Ptr{Nothing},),f.ptr)
         f.ptr = C_NULL
     end
-    println("finalized")
 end
 
 function edfload(edffile::EDFFile)
