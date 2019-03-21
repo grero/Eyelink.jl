@@ -90,7 +90,7 @@ Load eyelink events and, optionally, samples from the EDF file `f`. First checks
 
 	function load(f::String,check=1, load_events=true,load_samples=true)
 """
-function load(f::String,check=1, load_events=true,load_samples=true;do_save=true)
+function load(f::String;check=1, load_events=true,load_samples=true,do_save=true)
 	samplefile = replace(f, ".edf" => "_eyesamples.hdf5")
 	if isfile(samplefile) && load_samples
         ss = load(File(format"HDF5", samplefile))
