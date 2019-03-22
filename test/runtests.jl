@@ -38,5 +38,10 @@ end
     @test size(gazey) == size(eyelinkdata.samples.gy)
     @test gazex ≈ eyelinkdata.samples.gx
     @test gazey ≈ eyelinkdata.samples.gy
-
+    messages, timestamps = Eyelink.getmessages("W7_10_2.edf")
+    message_events = filter(ee->ee.eventtype==:messageevent,eyelinkdata.events)
+    _messages = [m.message for m in message_events]
+    _timestamps = [m.sttime for m in message_events]
+    @test messages == _messages
+    @test timestamps == _timestamps
 end
