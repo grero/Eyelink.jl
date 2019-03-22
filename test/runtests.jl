@@ -33,4 +33,10 @@ end
     @test gx ≈ 846.2f0
     gy = eyelinkdata.samples.gy[2,1]
     @test gy ≈ 643.5f0
+    gazex,gazey,gtime = Eyelink.getgazepos("w7_10_2.edf")
+    @test size(gazex) == size(eyelinkdata.samples.gx)
+    @test size(gazey) == size(eyelinkdata.samples.gy)
+    @test gazex ≈ eyelinkdata.samples.gx
+    @test gazey ≈ eyelinkdata.samples.gy
+
 end
