@@ -193,22 +193,38 @@ function getsaccades(events::Array{Event,1})
 	saccades
 end
 
+function getgazepos(f::String;check_consistency=0)
+    edffile = edfopen(f, check_consistency, false, true)
+    try
+        return getgazepos(edffile)
+    catch ee
+        rethrow(ee)
+    finally
+        edfclose(edffile)
+    end
+end
+
 function getgazepos(f::EDFFile)
-    gazex = Array{Float32}(0)
-    gazey = Array{Float32}(0)
-    timestamp = Array{Int64}(0)
+    n = get_element_count(f)
+    gazex = Matrix{Float32}(undef, 2,n)
+    gazey = Matrix{Float32}(undef, 2,n)
+    timestamp = Vector{Int64}(undef, n)
+    i = 1
+    p = Progress(n, 0.1)
     while f.nextevent != :nopending
         nextevent = edfnextdata!(f)
         if nextevent == :sample_type
             _sample = edfdata(f)
-            push!(gazex, _sample.gx.x1)
-            push!(gazex, _sample.gx.x2)
-            push!(gazey, _sample.gy.x1)
-            push!(gazey, _sample.gy.x2)
-            push!(timestamp, _sample.time)
+            gazex[1,i] = _sample.gx[1]
+            gazex[2,i] = _sample.gx[2]
+            gazey[1,i] = _sample.gy[1]
+            gazey[2,i] = _sample.gy[2]
+            timestamp[i] = _sample.time
+            i += 1
+            update!(p, i)
         end
     end
-    reshape(gazex,(2,div(length(gazex),2))), reshape(gazey, (2, div(length(gazey),2))), timestamp
+    gazex[:,1:i-1], gazey[:,1:i-1], timestamp[1:i]
 end
 
 function getmessage(event::FEVENT)
