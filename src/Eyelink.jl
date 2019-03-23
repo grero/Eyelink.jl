@@ -235,7 +235,7 @@ function getgazepos(f::EDFFile)
             update!(p, i)
         end
     end
-    gazex[:,1:i-1], gazey[:,1:i-1], timestamp[1:i]
+    gazex[:,1:i-1], gazey[:,1:i-1], timestamp[1:i-1]
 end
 
 function getmessage(event::FEVENT)
