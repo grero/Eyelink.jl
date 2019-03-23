@@ -262,6 +262,17 @@ function getfixations(f::EDFFile;verbose::Integer=0)
 	events
 end
 
+function getscreensize(f::String;check_consistency=0)
+    edffile = edfopen(f, check_consistency, true, false)
+    try
+        return getscreensize(edffile)
+    catch ee
+        rethrow(ee)
+    finally
+        edfclose(edffile)
+    end
+end
+
 """
 Return the screen size as (width, height) in pixels
 """
@@ -270,12 +281,26 @@ function getscreensize(f::EDFFile;verbose::Integer=0)
 		nextevent = edfnextdata!(f)
 		if nextevent == :messageevent
 			msg,t = getmessage(edfdata(f))
-			if contains(msg, "DISPLAY_COORDS")
-				pp = split(strip(msg,'\0'))
-				return parse(Int64,pp[end-1])+1,parse(Int64,pp[end])+1
-			end
+            screen_width,screen_height = getscreensize([msg])
+            if (screen_width, screen_height) != (0,0)
+                return screen_width, screen_height
+            end
 		end
 	end
+end
+
+function getscreensize(messages::Vector{String})
+    screen_width = 0
+    screen_height = 0
+    for m in messages
+        if occursin("DISPLAY_COORDS", m)
+            pp = split(strip(m,'\0'))
+            screen_width = parse(Int64, pp[end-1])
+            screen_height = parse(Int64, pp[end])
+            break
+        end
+    end
+    screen_width, screen_height
 end
 
 function parsetrials(fname::String,args...)
