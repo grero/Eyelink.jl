@@ -157,15 +157,26 @@ function edfdata(f::EDFFile)
 	end
 end
 
+function getmessages(f::String;check_consistency=0)
+    edffile = edfopen(f, check_consistency, true, false)
+    try
+        return getmessages(edffile)
+    catch ee
+        rethrow(ee)
+    finally
+        edfclose(edffile)
+    end
+end
+
 function getmessages(f::EDFFile)
-    messages = Array{String}(0)
-    timestamps = Array{Int64}(0)
+    messages = Vector{String}(undef, 0)
+    timestamps = Vector{UInt32}(undef, 0)
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
 		if nextevent == :messageevent
-                        message,timestamp = getmessage(edfdata(f))
+            message,timestamp = getmessage(edfdata(f))
 			push!(messages, strip(message,'\0'))
-                        push!(timestamps,timestamp)
+            push!(timestamps,timestamp)
 		end
 	end
 	messages,timestamps
