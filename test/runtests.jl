@@ -44,4 +44,7 @@ end
     _timestamps = [m.sttime for m in message_events]
     @test messages == _messages
     @test timestamps == _timestamps
+    screen_width, screen_height = Eyelink.getscreensize("w7_10_2.edf")
+    @test screen_width == 1920
+    @test screen_height == 1200
 end
