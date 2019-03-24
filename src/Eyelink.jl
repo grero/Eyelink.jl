@@ -19,6 +19,17 @@ function version()
 	return bytestring(_version)
 end
 
+function edfopen(func::Function, fname::String, load_events::Bool, load_samples::Bool;check_consistency=0)
+    edffile = edfopen(fname, check_consistency, load_events, load_samples)
+    try
+        return func(edffile)
+    catch ee
+        rethrow(ee)
+    finally
+        edfclose(edffile)
+    end
+end
+
 function edfopen(fname::String,consistency_check::Int64, load_events::Bool, load_samples::Bool)
 	err = 0
 	if !isfile(fname)
