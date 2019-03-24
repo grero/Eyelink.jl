@@ -47,4 +47,14 @@ end
     screen_width, screen_height = Eyelink.getscreensize("w7_10_2.edf")
     @test screen_width == 1920
     @test screen_height == 1200
+
+    @testset "Saccades" begin
+        saccade_events = filter(ee->ee.eventtype==:endsacc,eyelinkdata.events)
+        saccades = Eyelink.getsaccades("w7_10_2.edf")
+        @test length(saccades) == length(saccade_events)
+        start_time = round(UInt32, saccades[1].start_time)
+        end_time = round(UInt32, saccades[1].end_time)
+        @test start_time == saccade_events[1].sttime
+        @test end_time == saccade_events[1].entime
+    end
 end
