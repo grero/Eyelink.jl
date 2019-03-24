@@ -57,4 +57,10 @@ end
         @test start_time == saccade_events[1].sttime
         @test end_time == saccade_events[1].entime
     end
+    @testset "Fixations" begin
+        fixation_events = filter(ee->ee.eventtype==:endfix, eyelinkdata.events)
+        fixations = Eyelink.getfixations("w7_10_2.edf")
+        @test length(fixation_events) == length(fixations)
+        @test fixation_events[1].sttime == round(UInt32, fixations[1].time)
+    end
 end
