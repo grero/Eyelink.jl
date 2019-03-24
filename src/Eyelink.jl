@@ -193,8 +193,14 @@ function getmessages(f::EDFFile)
 	messages,timestamps
 end
 
+function getsaccades(f::String;check_consistency=0)
+    edfopen(f, true, false;check_consistency=check_consistency) do edffile
+        getsaccades(edffile)
+    end
+end
+
 function getsaccades(f::EDFFile)
-    saccades = Array{Saccade}(0)
+    saccades = Saccade[]
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
 		_event= edfdata(f)
