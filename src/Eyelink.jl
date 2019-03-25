@@ -267,8 +267,14 @@ function getfixation(event::FEVENT)
 	end
 end
 
+function getfixations(f::String;check_consistency=0)
+    edfopen(f, true, false;check_consistency=check_consistency) do edffile
+        getfixations(edffile)
+    end
+end
+
 function getfixations(f::EDFFile;verbose::Integer=0)
-    events = Array{EyeEvent}(0)
+    events = EyeEvent[]
 	while f.nextevent != :nopending
 		nextevent = edfnextdata!(f)
 		if nextevent == :endfix
