@@ -16,6 +16,7 @@ datatypes = Dict{Int16, Symbol}(0 => :nopending,
 			 16 => :endsamples,
 			 17 => :startevent,
 			 18 => :endevent,
+             30 => :recordinginfo,
              200 => :sample_type)
 
 
@@ -29,6 +30,29 @@ end
 
 function EDFFile(fname::String, ptr::Ptr)
 	EDFFile(fname,ptr,0,0,:unknown)
+end
+
+struct Recording
+    time::UInt32
+    sample_rate::Float32
+    eflags::UInt16
+    sflags::UInt16
+    state::UInt8
+    record_type::UInt8
+    pupil_type::UInt8
+    recording_mode::UInt8
+    filter_type::UInt8
+    pos_type::UInt8
+    eye::UInt8
+end
+
+function Recording()
+    args = []
+    for f in fieldnames(Recording)
+        tt = fieldtype(Recording,f)
+        push!(args, zero(tt))
+    end
+    Recording(args...)
 end
 
 struct EyeEvent
@@ -415,9 +439,12 @@ function convert(::Type{Array{T,1}}, M::Dict) where T<:AbstractSaccade
 end
 
 struct EyelinkData
+    recording_info::Vector{Recording}
 	events::Array{Event,1}
 	samples::Samples
 end
+
+Eyelinkdata(events::Vector{Event}, samples::Samples) = EyelinkData([Reording()], events, samples)
 
 get_gaze(eyelinkdata::EyelinkData) = (eyelinkdata.samples.gx, eyelinkdata.samples.gy)
 get_pupil(eyelinkdata::EyelinkData) = eyelinkdata.samples.pa

@@ -14,6 +14,10 @@ end
 @testset "Load file" begin
     download("http://cortex.nus.edu.sg/testdata/w7_10_2.edf", "w7_10_2.edf")
     eyelinkdata = Eyelink.load("w7_10_2.edf")
+    @test eyelinkdata.recording_info[1].time == 0x001c0657
+    @test eyelinkdata.recording_info[1].state == 0x01
+    @test eyelinkdata.recording_info[2].time == 0x001c07f9
+    @test eyelinkdata.recording_info[2].state == 0x00
     mm = eyelinkdata.events[1].message
     @test mm == "DISPLAY_COORDS 0 0 1920 1200"
     start_fix_events = filter(ee->ee.eventtype==:endfix,eyelinkdata.events)
