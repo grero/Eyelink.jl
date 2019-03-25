@@ -59,6 +59,7 @@ function edfload(edffile::EDFFile)
     nevents = get_element_count(f)
     samples = Array{FSAMPLE}(undef, nevents)
     events = Array{Event}(undef, nevents)
+    recording_info = Recording[]
     event_count = 0
     sample_count = 0
     total_count = 0
@@ -70,8 +71,9 @@ function edfload(edffile::EDFFile)
             sample_count += 1
             samples[sample_count] = _sample
 
-		elseif nextevent == :recording_info
-			#nothing
+		elseif nextevent == :recordinginfo
+            _recinfo = edfdata(f)
+            push!(recording_info, _recinfo)
 		elseif nextevent == :no_pending_items
 			#ntohing
 		else #event
@@ -86,7 +88,7 @@ function edfload(edffile::EDFFile)
         total_count += 1
         update!(p, total_count)
 	end
-    Dict([("events", events[1:event_count]), ("samples", samples[1:sample_count])])
+    Dict([("events", events[1:event_count]), ("samples", samples[1:sample_count]), ("recording_info", recording_info)])
 end
 
 function get_element_count(edffile::EDFFile)
@@ -107,7 +109,7 @@ function load(f::String;check=1, load_events=true,load_samples=true,do_save=true
         ss = load(File(format"HDF5", samplefile))
 		edffile = edfopen(f, check, true, false)
 		data = edfload(edffile)
-		eyedata = EyelinkData(data["events"],ss)
+        eyedata = EyelinkData(data["recording_info"], data["events"],ss)
 	else
 		edffile = edfopen(f, check, load_events, load_samples)
 		data = edfload(edffile)
@@ -119,7 +121,7 @@ function load(f::String;check=1, load_events=true,load_samples=true,do_save=true
 		else
 			ss = Samples(0)
 		end
-		eyedata = EyelinkData(data["events"], ss)
+        eyedata = EyelinkData(data["recording_info"], data["events"], ss)
 	end
 	eyedata
 end
@@ -158,8 +160,10 @@ function edfdata(f::EDFFile)
 	if f.nextevent == :sample_type
 		#TODO: Implement this
 		_sample = unsafe_load(convert(Ptr{FSAMPLE}, _data), 1)
-                return _sample
-	elseif f.nextevent == :recording_info
+        return _sample
+	elseif f.nextevent == :recordinginfo
+        _recinfo = unsafe_load(convert(Ptr{Recording}, _data),1)
+        return _recinfo
 	elseif f.nextevent == :no_pending_items
 	else
 		#even type
