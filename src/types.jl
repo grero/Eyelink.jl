@@ -316,6 +316,11 @@ struct Samples
 	fryvel::Array{Float32,2}
 end
 
+function Base.show(io::IO, samples::Samples)
+	n = size(samples.gx, 2)
+	print(io, "Eyelink.Samples structure with $n continuous samples")
+end
+
 function Samples(n::Integer)
 	args = Any[]
 	for ff in fieldnames(Samples)
