@@ -184,6 +184,12 @@ struct Event
 	eventtype::Symbol
 end
 
+function Base.show(io::IO, ::MIME"text/plain", events::Vector{Event})
+	Δt = (events[end].time - events[1].time)/1000.0
+	n = length(events)
+	print(io, "Vector of $n Events spanning $(Δt)s")
+end
+
 struct LSTRING
 	len::Int16
 	c::UInt8
