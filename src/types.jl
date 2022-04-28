@@ -446,6 +446,12 @@ struct EyelinkData
 	samples::Samples
 end
 
+function Base.show(io::IO, edata::EyelinkData)
+	nevents = length(edata.events)
+	nsamples = size(edata.samples.gx,2)
+	print(io, "EyelinkData with $(nevents) events and $(nsamples) samples\n")
+end
+
 Eyelinkdata(events::Vector{Event}, samples::Samples) = EyelinkData([Reording()], events, samples)
 
 get_gaze(eyelinkdata::EyelinkData) = (eyelinkdata.samples.gx, eyelinkdata.samples.gy)
