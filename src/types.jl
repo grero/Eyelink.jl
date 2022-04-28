@@ -447,7 +447,7 @@ end
 function Base.show(io::IO, edata::EyelinkData)
 	nevents = length(edata.events)
 	nsamples = size(edata.samples.gx,2)
-	print(io, "EyelinkData with $(nevents) events and $(nsamples) samples\n")
+	print(io, "EyelinkData with $(nevents) events and $(nsamples) samples")
 end
 
 Eyelinkdata(events::Vector{Event}, samples::Samples) = EyelinkData([Reording()], events, samples)
