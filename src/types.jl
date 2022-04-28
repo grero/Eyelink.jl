@@ -7,6 +7,8 @@ using StaticArrays
 datatypes = Dict{Int16, Symbol}(0 => :nopending,
 			24 => :messageevent,
 			 25 => :buttonevent,
+			 3 => :startblink,
+			 4 => :endblink,
 			 5 => :startsacc,
 			 6 => :endsacc,
 			 7 => :startfix,
