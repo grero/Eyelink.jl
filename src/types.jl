@@ -48,6 +48,14 @@ struct Recording
     eye::UInt8
 end
 
+function Base.show(io::IO, rec::Recording)
+	print(io, join(["Eyelink.Recording with fields",
+					"\ttime: $(rec.time)",
+				    "\tsample_rate:$(rec.sample_rate)",
+				    "\trecord_type:$(rec.record_type)"],
+				     '\n'))
+end
+
 function Recording()
     args = []
     for f in fieldnames(Recording)
