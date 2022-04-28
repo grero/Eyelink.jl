@@ -1,7 +1,7 @@
 name = "Eyelink"
 uuid = "83654edc-39a9-11e9-3850-750e501afe4a"
 authors = ["roger <roger.herikstad@gmail.com>"]
-version = "0.6.0"
+version = "0.7.0"
 
 [deps]
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
