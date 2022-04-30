@@ -74,7 +74,7 @@ function edfload(edffile::EDFFile)
 		elseif nextevent == :recordinginfo
             _recinfo = edfdata(f)
             push!(recording_info, _recinfo)
-		elseif nextevent == :no_pending_items
+		elseif nextevent == :nopending
 			#ntohing
 		else #event
 			_event = edfdata(f)
@@ -164,7 +164,7 @@ function edfdata(f::EDFFile)
 	elseif f.nextevent == :recordinginfo
         _recinfo = unsafe_load(convert(Ptr{Recording}, _data),1)
         return _recinfo
-	elseif f.nextevent == :no_pending_items
+	elseif f.nextevent == :nopending
 	else
 		#even type
 		_event = unsafe_load(convert(Ptr{FEVENT}, _data), 1)
