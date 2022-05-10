@@ -48,6 +48,14 @@ struct Recording
     eye::UInt8
 end
 
+function Base.show(io::IO, rec::Recording)
+	print(io, join(["Eyelink.Recording with fields",
+					"\ttime: $(rec.time)",
+				    "\tsample_rate:$(rec.sample_rate)",
+				    "\trecord_type:$(rec.record_type)"],
+				     '\n'))
+end
+
 function Recording()
     args = []
     for f in fieldnames(Recording)
@@ -184,6 +192,12 @@ struct Event
 	eventtype::Symbol
 end
 
+function Base.show(io::IO, ::MIME"text/plain", events::Vector{Event})
+	Δt = (events[end].time - events[1].time)/1000.0
+	n = length(events)
+	print(io, "Vector of $n Events spanning $(Δt)s")
+end
+
 struct LSTRING
 	len::Int16
 	c::UInt8
@@ -308,6 +322,11 @@ struct Samples
 	fhyvel::Array{Float32,2}
 	frxvel::Array{Float32,2}
 	fryvel::Array{Float32,2}
+end
+
+function Base.show(io::IO, samples::Samples)
+	n = size(samples.gx, 2)
+	print(io, "Eyelink.Samples structure with $n continuous samples")
 end
 
 function Samples(n::Integer)
@@ -444,6 +463,12 @@ struct EyelinkData
     recording_info::Vector{Recording}
 	events::Array{Event,1}
 	samples::Samples
+end
+
+function Base.show(io::IO, edata::EyelinkData)
+	nevents = length(edata.events)
+	nsamples = size(edata.samples.gx,2)
+	print(io, "EyelinkData with $(nevents) events and $(nsamples) samples")
 end
 
 Eyelinkdata(events::Vector{Event}, samples::Samples) = EyelinkData([Reording()], events, samples)
